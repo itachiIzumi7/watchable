@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "include": [
+    "/*"
+  ],
+  "exclude": [
+    "/assets/*",
+    "/party/*",
+    "/moovie",
+    "/moovie.html",
+    "/icons/*",
+    "/favicon.svg",
+    "/manifest.json",
+    "/og-image.png",
+    "/robots.txt",
+    "/sitemap.xml",
+    "/admin.html",
+    "/player.html",
+    "/test-protection.html",
+    "/*.js",
+    "/*.css",
+    "/*.png",
+    "/*.svg",
+    "/*.jpg",
+    "/*.jpeg",
+    "/*.webp",
+    "/*.woff2",
+    "/*.woff",
+    "/*.ico"
+  ]
+}

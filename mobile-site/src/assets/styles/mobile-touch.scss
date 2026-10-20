@@ -1,0 +1,36 @@
+/* Touch-friendly controls for mobile-site (prevents iOS zoom, 44px tap targets) */
+
+.scroll-car-container,
+.auth-canvas,
+.keyboard-shortcuts-info {
+    display: none !important;
+}
+
+@media (max-width: 640px) {
+    select,
+    input[type='search'],
+    input[type='text'],
+    input[type='password'],
+    textarea {
+        font-size: 16px !important;
+    }
+
+    .btn,
+    .btn-primary,
+    .btn-secondary,
+    .btn-sm,
+    .btn-xs {
+        min-height: 2.75rem;
+        padding: 0.55rem 1rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Mobile-site player controls: Always keep 15-second skip buttons active in portrait & horizontal landscape */
+.moovie-frame__center-skip {
+    display: grid !important;
+}
+
+.moovie-frame__mobile-skip {
+    display: none !important;
+}

@@ -1,0 +1,2534 @@
+<template>
+    <div class="admin-page">
+        <div class="admin-page__orb orb-left" />
+        <div class="admin-page__orb orb-right" />
+
+        <div class="admin-page__container">
+            <section v-if="!authenticated" class="admin-page__view">
+                <h1 class="admin-page__title">Admin Gateway</h1>
+                <p class="admin-page__subtitle">Access settings dashboard to configure defaults.</p>
+                <form @submit.prevent="handleAuthenticate">
+                    <div class="admin-page__field">
+                        <label class="admin-page__label" for="passcode">Passcode</label>
+                        <input
+                            id="passcode"
+                            v-model="passcode"
+                            type="password"
+                            class="admin-page__input"
+                            placeholder="••••••••"
+                            required
+                            autocomplete="current-password"
+                        >
+                    </div>
+                    <button type="submit" class="admin-page__btn" :disabled="authLoading">
+                        <span>{{ authLoading ? 'Verifying...' : 'Unlock Dashboard' }}</span>
+                    </button>
+                </form>
+            </section>
+
+            <section v-else class="admin-page__view">
+                <div class="admin-page__header">
+                    <h1 class="admin-page__title">Admin</h1>
+                    <p class="admin-page__subtitle">Configure your site settings, send notifications, manage banners and polls.</p>
+                    <div class="admin-page__tabs">
+                        <button
+                            v-for="tab in tabs"
+                            :key="tab.key"
+                            type="button"
+                            class="admin-page__tab"
+                            :class="{ 'is-active': activeTab === tab.key }"
+                            @click="activeTab = tab.key"
+                        >
+                            <span class="admin-page__tab-icon">{{ tab.icon }}</span>
+                            <span class="admin-page__tab-label">{{ tab.label }}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── Settings Tab ─────────────────────────────────────── -->
+                <div v-if="activeTab === 'settings'" class="admin-page__tab-content">
+                    <h2 class="admin-page__section-title">Settings</h2>
+                    <form @submit.prevent="handleSaveSettings">
+                        <div class="admin-page__field">
+                            <label class="admin-page__label" for="default-provider">Default Stream Player (PC)</label>
+                            <select id="default-provider" v-model="settings.defaultProvider" class="admin-page__select">
+                                <option value="moovie">Moovie (moovie server)</option>
+                                <option value="vidking">Kheer (VidKing)</option>
+                                <option value="videasy">Barfi (VidEasy)</option>
+                                <option value="vidsrc_ru">Laddu (VidSrc.ru)</option>
+                                <option value="vidsrc_su">Peda (VidSrc.su)</option>
+                                <option value="vidsrcme">Gajar Ka Halwa (VidSrcMe)</option>
+                                <option value="multiembed">Soan Papdi (MultiEmbed)</option>
+                                <option value="vsrc">Sandesh (vsrc.su)</option>
+                                <option value="vidlink">Cham Cham (VidLink)</option>
+                                <option value="autoembed">Kulfi (AutoEmbed)</option>
+                                <option value="vidfast">Mysore Pak (VidFast)</option>
+                                <option value="movies111">Imarti (111Movies)</option>
+                                <option value="vidora">Ghevar (Vidora)</option>
+                                <option value="cinezo">Cheesecake (Cinezo)</option>
+                                <option value="nankhatai">Nankhatai (NontonGo)</option>
+                                <option value="petha">Petha (NontonGo)</option>
+                                <option value="spoider">Spoider (screenscape.me)</option>
+                            </select>
+                        </div>
+
+                        <div class="admin-page__field">
+                            <label class="admin-page__label" for="default-provider-mobile">Default Stream Player (Mobile)</label>
+                            <select id="default-provider-mobile" v-model="settings.defaultProviderMobile" class="admin-page__select">
+                                <option value="moovie">Moovie (moovie server)</option>
+                                <option value="vidking">Kheer (VidKing)</option>
+                                <option value="videasy">Barfi (VidEasy)</option>
+                                <option value="vidsrc_ru">Laddu (VidSrc.ru)</option>
+                                <option value="vidsrc_su">Peda (VidSrc.su)</option>
+                                <option value="vidsrcme">Gajar Ka Halwa (VidSrcMe)</option>
+                                <option value="multiembed">Soan Papdi (MultiEmbed)</option>
+                                <option value="vsrc">Sandesh (vsrc.su)</option>
+                                <option value="vidlink">Cham Cham (VidLink)</option>
+                                <option value="autoembed">Kulfi (AutoEmbed)</option>
+                                <option value="vidfast">Mysore Pak (VidFast)</option>
+                                <option value="movies111">Imarti (111Movies)</option>
+                                <option value="vidora">Ghevar (Vidora)</option>
+                                <option value="cinezo">Cheesecake (Cinezo)</option>
+                                <option value="nankhatai">Nankhatai (NontonGo)</option>
+                                <option value="petha">Petha (NontonGo)</option>
+                                <option value="spoider">Spoider (screenscape.me)</option>
+                            </select>
+                        </div>
+
+                        <div class="admin-page__field">
+                            <label class="admin-page__label" for="tmdb-quality">TMDB Image Quality</label>
+                            <select id="tmdb-quality" v-model="settings.tmdbQuality" class="admin-page__select">
+                                <option value="low">Low - faster, smaller poster and backdrop images</option>
+                                <option value="medium">Medium - balanced image quality</option>
+                                <option value="high">High - sharpest images, heavier bandwidth</option>
+                            </select>
+                        </div>
+
+                        <div class="admin-page__field">
+                            <label class="admin-page__label">Default Server Overrides by TMDB ID</label>
+                            
+                            <!-- Overrides list -->
+                            <div v-if="Object.keys(serverOverrides).length === 0" class="admin-page__hint" style="margin-bottom: 0.5rem">
+                                No overrides configured. Specific servers are selected automatically based on quality/priority.
+                            </div>
+                            <div v-else style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
+                                <div 
+                                    v-for="(serverName, key) in serverOverrides" 
+                                    :key="key" 
+                                    style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 0.5rem 1rem; border-radius: 4px;"
+                                >
+                                    <span>
+                                        <strong style="text-transform: uppercase; color: var(--ember);">{{ key.split('-')[0] }}</strong> 
+                                        ID: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">{{ key.split('-')[1] }}</code> 
+                                        ➔ <strong style="color: #4eb5ff;">{{ serverName }}</strong>
+                                    </span>
+                                    <button 
+                                        type="button" 
+                                        class="admin-page__btn admin-page__btn--sm admin-page__btn--danger" 
+                                        @click="deleteOverride(key)"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Add new override form row -->
+                            <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem;">
+                                <select v-model="newOverride.type" class="admin-page__select" style="flex: 1; margin: 0; min-height: 38px;">
+                                    <option value="movie">Movie</option>
+                                    <option value="tv">Show (TV)</option>
+                                </select>
+                                <input 
+                                    v-model="newOverride.id" 
+                                    type="text" 
+                                    class="admin-page__input" 
+                                    style="flex: 2; margin: 0;" 
+                                    placeholder="TMDB ID (e.g. 503)"
+                                />
+                                <select v-model="newOverride.server" class="admin-page__select" style="flex: 2; margin: 0; min-height: 38px;">
+                                    <option value="Poseidon">Poseidon</option>
+                                    <option value="Thor">Thor</option>
+                                    <option value="Athena">Athena</option>
+                                    <option value="Zeus">Zeus</option>
+                                    <option value="Hades">Hades</option>
+                                </select>
+                                <button 
+                                    type="button" 
+                                    class="admin-page__btn" 
+                                    style="margin: 0; height: 38px; display: inline-flex; align-items: center;"
+                                    @click="addOverride"
+                                >
+                                    Add
+                                </button>
+                            </div>
+                            <p class="admin-page__hint">Add specific TMDB IDs to force the Moovie player to prioritize that server first by default.</p>
+                        </div>
+
+                        <div class="admin-page__field">
+                            <label class="admin-page__label">Groq API Keys (3 Slots for Auto-Failover)</label>
+                            <input v-model="settings.groqKeys[0]" type="password" class="admin-page__input" placeholder="Groq API Key Slot 1">
+                            <input v-model="settings.groqKeys[1]" type="password" class="admin-page__input" placeholder="Groq API Key Slot 2">
+                            <input v-model="settings.groqKeys[2]" type="password" class="admin-page__input" placeholder="Groq API Key Slot 3">
+                            <p class="admin-page__hint">Enter up to 3 keys. If key 1 hits rate limits or quota issues, the recommendation engine will failover to key 2, then key 3 automatically.</p>
+                        </div>
+
+                        <div class="admin-page__field">
+                            <label class="admin-page__label">YouTube Data API Keys (Auto-Failover)</label>
+                            <div v-for="(_, i) in youtubeApiKeys" :key="i" style="display:flex;gap:0.5rem;margin-bottom:0.5rem;align-items:center">
+                                <input v-model="youtubeApiKeys[i]" type="password" class="admin-page__input" style="flex:1" placeholder="YouTube API Key">
+                                <button type="button" class="admin-page__btn admin-page__btn--sm admin-page__btn--danger" @click="removeYoutubeKey(i)" v-if="youtubeApiKeys.length > 1">&times;</button>
+                            </div>
+                            <button type="button" class="admin-page__btn admin-page__btn--sm" @click="addYoutubeKey">+ Add Key</button>
+                            <p class="admin-page__hint">Keys are tried in order. If one gets rate-limited (quota exceeded), the next key is used automatically.</p>
+                        </div>
+
+                        <div class="admin-page__field">
+                            <label class="admin-page__label">OpenSubtitles API Keys (Auto-Failover)</label>
+                            <div v-for="(_, i) in osApiKeys" :key="i" style="display:flex;gap:0.5rem;margin-bottom:0.5rem;align-items:center">
+                                <input v-model="osApiKeys[i]" type="password" class="admin-page__input" style="flex:1" placeholder="OpenSubtitles API Key">
+                                <button type="button" class="admin-page__btn admin-page__btn--sm admin-page__btn--danger" @click="removeOsKey(i)" v-if="osApiKeys.length > 1">&times;</button>
+                            </div>
+                            <button type="button" class="admin-page__btn admin-page__btn--sm" @click="addOsKey">+ Add Key</button>
+                            <p class="admin-page__hint">Keys are tried in order. If one fails (429/403), the next key is used automatically.</p>
+                        </div>
+
+                        <div class="admin-page__field">
+                            <label class="admin-page__label" for="new-passcode">Change Passcode (Optional)</label>
+                            <input id="new-passcode" v-model="newPasscode" type="password" class="admin-page__input" placeholder="Enter new passcode to update">
+                        </div>
+
+                        <button type="submit" class="admin-page__btn" :disabled="saveLoading">
+                            <span>{{ saveLoading ? 'Saving...' : 'Save Changes' }}</span>
+                        </button>
+                    </form>
+
+                    <div class="admin-page__server-grid" style="margin-top: 2rem;">
+                        <div class="admin-page__server-row"><strong>ID</strong><strong>Sweet Name</strong></div>
+                        <div class="admin-page__server-row"><span>moovie</span><span>Moovie</span></div>
+                        <div class="admin-page__server-row"><span>vidking</span><span>Kheer</span></div>
+                        <div class="admin-page__server-row"><span>videasy</span><span>Barfi</span></div>
+                        <div class="admin-page__server-row"><span>vidsrc_ru</span><span>Laddu</span></div>
+                        <div class="admin-page__server-row"><span>vidsrc_su</span><span>Peda</span></div>
+                        <div class="admin-page__server-row"><span>vidsrcme</span><span>Gajar Ka Halwa</span></div>
+                        <div class="admin-page__server-row"><span>multiembed</span><span>Soan Papdi</span></div>
+                        <div class="admin-page__server-row"><span>vsrc</span><span>Sandesh</span></div>
+                        <div class="admin-page__server-row"><span>vidlink</span><span>Cham Cham</span></div>
+                        <div class="admin-page__server-row"><span>autoembed</span><span>Kulfi</span></div>
+                        <div class="admin-page__server-row"><span>vidfast</span><span>Mysore Pak</span></div>
+                        <div class="admin-page__server-row"><span>movies111</span><span>Imarti</span></div>
+                        <div class="admin-page__server-row"><span>vidora</span><span>Ghevar</span></div>
+                        <div class="admin-page__server-row"><span>cinezo</span><span>Cheesecake</span></div>
+                        <div class="admin-page__server-row"><span>nankhatai</span><span>Nankhatai</span></div>
+                        <div class="admin-page__server-row"><span>petha</span><span>Petha</span></div>
+                        <div class="admin-page__server-row"><span>spoider</span><span>Spoider</span></div>
+                    </div>
+
+                    <!-- ── Server Reorder ──────────────────────────────────── -->
+                    <div style="margin-top: 2rem;">
+                        <h2 class="admin-page__section-title">Server Order</h2>
+                        <p class="admin-page__hint" style="margin-bottom:0.75rem;">Rearrange the server list for all users. The top server becomes the default.</p>
+                        <div v-for="(s, i) in serverOrderList" :key="s.id" class="admin-page__reorder-item">
+                            <div class="admin-page__reorder-controls">
+                                <button type="button" class="admin-page__reorder-btn" :disabled="i === 0" @click="moveServer(i, -1)">↑</button>
+                                <button type="button" class="admin-page__reorder-btn" :disabled="i === serverOrderList.length - 1" @click="moveServer(i, 1)">↓</button>
+                            </div>
+                            <span class="admin-page__reorder-idx">{{ i + 1 }}</span>
+                            <span class="admin-page__reorder-name">{{ s.name }}</span>
+                            <span class="admin-page__reorder-id">{{ s.id }}</span>
+                        </div>
+                        <button type="button" class="admin-page__btn" style="margin-top:0.75rem;" :disabled="orderSaving" @click="handleSaveOrder">
+                            <span>{{ orderSaving ? 'Saving...' : 'Save Server Order' }}</span>
+                        </button>
+                    </div>
+
+                    <!-- ── Clear TMDB Cache ──────────────────────────────── -->
+                    <div class="admin-page__cache-card" style="margin-top: 2rem;">
+                        <div class="admin-page__cache-info">
+                            <span class="admin-page__cache-icon">🧊</span>
+                            <div>
+                                <strong class="admin-page__cache-title">Clear TMDB Poster Cache</strong>
+                                <p class="admin-page__hint" style="margin:0.25rem 0 0;">Nukes the local browser cache so fresh posters, billboards &amp; trending content load immediately. Each visitor's cache expires daily automatically — use this for an instant force-refresh on your own browser.</p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            class="admin-page__btn admin-page__btn--danger"
+                            :disabled="clearCacheLoading"
+                            @click="handleClearTmdbCache"
+                        >
+                            <span>{{ clearCacheLoading ? 'Clearing...' : '🗑️ Clear Cache Now' }}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── 4K Curation Tab ──────────────────────────────────── -->
+                <div v-if="activeTab === '4k'" class="admin-page__tab-content">
+                    <h2 class="admin-page__section-title">
+                        4K Selection Curation
+                        <span class="admin-page__curation-count">({{ selectedMovies.length }}/10)</span>
+                    </h2>
+
+                    <form @submit.prevent="handleSearch4K" class="admin-page__search-row">
+                        <input v-model="searchQuery" type="text" class="admin-page__input" placeholder="Search movies to add..." autocomplete="off">
+                        <button type="submit" class="admin-page__btn admin-page__btn--sm">Search</button>
+                    </form>
+
+                    <ul v-if="searchResults.length" class="admin-page__list">
+                        <li v-for="movie in searchResults" :key="movie.id" class="admin-page__list-item">
+                            <div class="admin-page__item-details">
+                                <div class="admin-page__item-title">{{ movie.title }}</div>
+                                <div class="admin-page__item-meta">{{ movie.release_date ? movie.release_date.split('-')[0] : 'N/A' }}</div>
+                            </div>
+                            <button
+                                type="button"
+                                class="admin-page__btn admin-page__btn--sm"
+                                :disabled="isAlreadyAdded(movie.id) || selectedMovies.length >= 10"
+                                @click="addMovie(movie)"
+                            >
+                                {{ isAlreadyAdded(movie.id) ? 'Added' : 'Add' }}
+                            </button>
+                        </li>
+                    </ul>
+
+                    <ul class="admin-page__list">
+                        <li v-if="!selectedMovies.length" class="admin-page__empty">No 4K movies selected yet</li>
+                        <li v-for="(movie, index) in selectedMovies" :key="movie.id" class="admin-page__list-item">
+                            <div class="admin-page__item-details">
+                                <div class="admin-page__item-title">{{ index + 1 }}. {{ movie.title }}</div>
+                                <div class="admin-page__item-meta">{{ movie.releaseDate ? movie.releaseDate.split('-')[0] : 'N/A' }}</div>
+                            </div>
+                            <div class="admin-page__item-actions">
+                                <button type="button" class="admin-page__icon-btn" :disabled="index === 0" @click="moveItem(index, -1)">↑</button>
+                                <button type="button" class="admin-page__icon-btn" :disabled="index === selectedMovies.length - 1" @click="moveItem(index, 1)">↓</button>
+                                <button type="button" class="admin-page__icon-btn admin-page__icon-btn--danger" @click="removeMovie(movie.id)">✕</button>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <button type="button" class="admin-page__btn" :disabled="save4kLoading" @click="handleSave4K">
+                        <span>{{ save4kLoading ? 'Saving curation...' : 'Save 4K Curation' }}</span>
+                    </button>
+                </div>
+
+                <!-- ── Notifications Tab ────────────────────────────────── -->
+                <div v-if="activeTab === 'notifications'" class="admin-page__tab-content">
+                    <h2 class="admin-page__section-title">Send Notification</h2>
+                    <form @submit.prevent="handleSendNotification">
+                        <div class="admin-page__field">
+                            <label class="admin-page__label" for="notif-title">Title</label>
+                            <input id="notif-title" v-model="notifTitle" type="text" class="admin-page__input" placeholder="Notification title" required>
+                        </div>
+                        <div class="admin-page__field">
+                            <label class="admin-page__label" for="notif-message">Message (optional)</label>
+                            <textarea id="notif-message" v-model="notifMessage" class="admin-page__input admin-page__textarea" placeholder="Notification message" rows="2"></textarea>
+                        </div>
+                        <div class="admin-page__field">
+                            <label class="admin-page__label" for="notif-type">Type</label>
+                            <select id="notif-type" v-model="notifType" class="admin-page__select">
+                                <option value="info">Info</option>
+                                <option value="success">Success</option>
+                                <option value="warning">Warning</option>
+                                <option value="error">Error</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="admin-page__btn" :disabled="notifLoading">
+                            <span>{{ notifLoading ? 'Sending...' : 'Send to All Users' }}</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- ── Banner Tab ───────────────────────────────────────── -->
+                <div v-if="activeTab === 'banner'" class="admin-page__tab-content">
+                    <h2 class="admin-page__section-title">Banner</h2>
+                    <form @submit.prevent="handleSaveBanner">
+                        <div class="admin-page__field">
+                            <label class="admin-page__label" for="banner-message">Message</label>
+                            <textarea id="banner-message" v-model="bannerMessage" class="admin-page__input admin-page__textarea" placeholder="Banner text (leave empty to hide)" rows="2"></textarea>
+                        </div>
+                        <div class="admin-page__field">
+                            <label class="admin-page__label" for="banner-link">Link (optional)</label>
+                            <input id="banner-link" v-model="bannerLink" type="url" class="admin-page__input" placeholder="https://...">
+                        </div>
+                        <div class="admin-page__field">
+                            <label class="admin-page__label" for="banner-bg">Background Color</label>
+                            <input id="banner-bg" v-model="bannerBgColor" type="text" class="admin-page__input" placeholder="#ffffff">
+                        </div>
+                        <div class="admin-page__field">
+                            <label class="admin-page__label" for="banner-text-color">Text Color</label>
+                            <input id="banner-text-color" v-model="bannerTextColor" type="text" class="admin-page__input" placeholder="#ffffff">
+                        </div>
+                        <div class="admin-page__field">
+                            <label class="admin-page__label">
+                                <input v-model="bannerActive" type="checkbox" style="margin-right: 0.5rem;">
+                                Active
+                            </label>
+                        </div>
+                        <button type="submit" class="admin-page__btn" :disabled="bannerLoading">
+                            <span>{{ bannerLoading ? 'Saving...' : 'Save Banner' }}</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- ── Moderation Tab ────────────────────────────────────── -->
+                <div v-if="activeTab === 'moderation'" class="admin-page__tab-content">
+                    <h2 class="admin-page__section-title">Moderation & Word Filter</h2>
+
+                    <!-- Banned Words Filter Section -->
+                    <div class="admin-page__mod-box">
+                        <h3 class="admin-page__subsection-title">Automated Vulgarity & Word Filter</h3>
+                        <p class="admin-page__mod-desc">
+                            Comments matching any of these words/phrases will be <strong>automatically blocked and hidden</strong> upon posting. Users will see <em>"[Comment removed due to inappropriate content]"</em> instead.
+                        </p>
+                        <form @submit.prevent="handleSaveBannedWords">
+                            <div class="admin-page__field">
+                                <label class="admin-page__label">Banned Words & Phrases (one per line)</label>
+                                <textarea
+                                    v-model="bannedWordsText"
+                                    class="admin-page__input admin-page__textarea"
+                                    placeholder="vulgarword1&#10;inappropriate_phrase&#10;spam_link"
+                                    rows="6"
+                                ></textarea>
+                            </div>
+                            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                                <button type="submit" class="admin-page__btn" :disabled="bannedWordsLoading">
+                                    <span>{{ bannedWordsLoading ? 'Saving Filter...' : 'Save Banned Words Filter' }}</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="admin-page__btn admin-page__btn--secondary"
+                                    @click="handleLoadPresetBannedWords"
+                                >
+                                    <span>⚡ Load Preset Profanity Filter</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Comment Moderation Panel -->
+                    <div class="admin-page__mod-box" style="margin-top: 2.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                            <h3 class="admin-page__subsection-title" style="margin-bottom: 0;">Comment Moderation Panel</h3>
+                            <button type="button" class="admin-page__btn admin-page__btn--sm" @click="loadModerationData">
+                                🔄 Refresh Comments
+                            </button>
+                        </div>
+
+                        <div class="admin-page__mod-filters">
+                            <div class="admin-page__field" style="margin-bottom: 0; flex: 1; min-width: 200px;">
+                                <input
+                                    v-model="modSearchQuery"
+                                    type="text"
+                                    class="admin-page__input"
+                                    placeholder="Search by username or comment text..."
+                                />
+                            </div>
+                            <div class="admin-page__mod-filter-buttons">
+                                <button
+                                    type="button"
+                                    class="admin-page__filter-btn"
+                                    :class="{ 'is-active': modFilterType === 'all' }"
+                                    @click="modFilterType = 'all'"
+                                >
+                                    All ({{ modComments.length }})
+                                </button>
+                                <button
+                                    type="button"
+                                    class="admin-page__filter-btn"
+                                    :class="{ 'is-active': modFilterType === 'flagged' }"
+                                    @click="modFilterType = 'flagged'"
+                                >
+                                    🚩 Flagged / Blocked ({{ modComments.filter(c => c.is_hidden).length }})
+                                </button>
+                                <button
+                                    type="button"
+                                    class="admin-page__filter-btn"
+                                    :class="{ 'is-active': modFilterType === 'visible' }"
+                                    @click="modFilterType = 'visible'"
+                                >
+                                    ✅ Visible ({{ modComments.filter(c => !c.is_hidden).length }})
+                                </button>
+                            </div>
+                        </div>
+
+                        <div v-if="modLoading" class="admin-page__empty">Loading comments...</div>
+                        <div v-else-if="filteredModComments.length === 0" class="admin-page__empty">No comments match the selected filter</div>
+
+                        <div v-else class="admin-page__comment-list">
+                            <div v-for="c in filteredModComments" :key="c.id" class="admin-page__comment-card" :class="{ 'is-blocked': c.is_hidden }">
+                                <div class="admin-page__comment-header">
+                                    <span class="admin-page__comment-author">👤 {{ c.username || 'Anonymous' }}</span>
+                                    <span class="admin-page__comment-badge" :class="c.media_type">
+                                        {{ c.media_type === 'lounge' ? '💬 Lounge' : `🎬 ${String(c.media_type).toUpperCase()} #${c.media_id}` }}
+                                    </span>
+                                    <span class="admin-page__comment-time">{{ new Date(c.created_at).toLocaleString() }}</span>
+                                    <span class="admin-page__comment-status" :class="{ 'is-blocked': c.is_hidden }">
+                                        {{ c.is_hidden ? '🚫 BLOCKED' : '✅ VISIBLE' }}
+                                    </span>
+                                </div>
+                                <div class="admin-page__comment-body">
+                                    <p v-if="c.is_hidden" class="admin-page__comment-text admin-page__comment-text--blocked">
+                                        <em>Original Content:</em> {{ c.content }}
+                                        <br>
+                                        <span class="admin-page__comment-notice">(Publicly shown as: "[Comment removed due to inappropriate content]")</span>
+                                    </p>
+                                    <p v-else class="admin-page__comment-text">{{ c.content }}</p>
+                                </div>
+                                <div class="admin-page__comment-actions">
+                                    <button
+                                        type="button"
+                                        class="admin-page__btn admin-page__btn--sm"
+                                        :class="c.is_hidden ? 'admin-page__btn--success' : 'admin-page__btn--warning'"
+                                        @click="handleToggleHideComment(c)"
+                                    >
+                                        {{ c.is_hidden ? '✅ Restore Comment' : '🚫 Block / Hide Comment' }}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="admin-page__btn admin-page__btn--sm admin-page__btn--danger"
+                                        @click="handleDeleteComment(c)"
+                                    >
+                                        🗑️ Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Polls Tab ────────────────────────────────────────── -->
+                <div v-if="activeTab === 'polls'" class="admin-page__tab-content">
+                    <h2 class="admin-page__section-title">Polls</h2>
+
+                    <h3 class="admin-page__subsection-title">Create Poll</h3>
+                    <form @submit.prevent="handleCreatePoll">
+                        <div class="admin-page__field">
+                            <label class="admin-page__label" for="poll-question">Question</label>
+                            <input id="poll-question" v-model="pollQuestion" type="text" class="admin-page__input" placeholder="Should we put ads on the site?" required>
+                        </div>
+                        <div class="admin-page__field">
+                            <label class="admin-page__label">Options (one per line)</label>
+                            <textarea v-model="pollOptionsText" class="admin-page__input admin-page__textarea" placeholder="Yes&#10;No&#10;Maybe" rows="3" required></textarea>
+                        </div>
+                        <div class="admin-page__field">
+                            <label class="admin-page__label">
+                                <input v-model="pollActive" type="checkbox" style="margin-right: 0.5rem;">
+                                Activate immediately
+                            </label>
+                        </div>
+                        <button type="submit" class="admin-page__btn" :disabled="pollLoading">
+                            <span>{{ pollLoading ? 'Creating...' : 'Create Poll' }}</span>
+                        </button>
+                    </form>
+
+                    <h3 class="admin-page__subsection-title" style="margin-top: 2rem;">Existing Polls &amp; Results</h3>
+                    <div v-if="existingPolls.length === 0" class="admin-page__empty">No polls created yet</div>
+                    <div v-for="poll in existingPolls" :key="poll.id" class="admin-page__poll-card">
+                        <div class="admin-page__poll-card-header">
+                            <span class="admin-page__poll-question">{{ poll.question }}</span>
+                            <span class="admin-page__poll-status" :class="{ 'is-active': poll.is_active }">
+                                {{ poll.is_active ? 'Active' : 'Inactive' }}
+                            </span>
+                        </div>
+                        <div v-if="pollResultsMap[poll.id]" class="admin-page__poll-results">
+                            <div v-for="(r, i) in pollResultsMap[poll.id]" :key="i" class="admin-page__poll-result-row">
+                                <div class="admin-page__poll-result-label">
+                                    <span>{{ r.option }}</span>
+                                    <span>{{ r.count }} votes ({{ r.percentage }}%)</span>
+                                </div>
+                                <div class="admin-page__poll-bar-bg">
+                                    <div class="admin-page__poll-bar-fill" :style="{ width: r.percentage + '%' }" />
+                                </div>
+                            </div>
+                            <div class="admin-page__poll-total">{{ pollVoteCounts[poll.id] || 0 }} total votes</div>
+                        </div>
+                        <div v-else class="admin-page__empty">Loading results...</div>
+                        <div class="admin-page__poll-actions">
+                            <button
+                                type="button"
+                                class="admin-page__btn admin-page__btn--sm"
+                                @click="handleTogglePoll(poll)"
+                            >
+                                {{ poll.is_active ? 'Deactivate' : 'Activate' }}
+                            </button>
+                            <button
+                                type="button"
+                                class="admin-page__btn admin-page__btn--sm"
+                                @click="handleNotifyPoll(poll)"
+                            >
+                                Notify All
+                            </button>
+                            <button
+                                type="button"
+                                class="admin-page__btn admin-page__btn--sm admin-page__btn--danger"
+                                @click="handleDeletePoll(poll)"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Suggestions & Engagement Tab ────────────────────────────────────── -->
+                <div v-if="activeTab === 'suggestions'" class="admin-page__tab-content">
+                    <h2 class="admin-page__section-title">Suggestions & Engagement</h2>
+
+                    <h3 class="admin-page__subsection-title">Create New Suggestion Prompt</h3>
+                    <form @submit.prevent="handleCreateSuggestion">
+                        <div class="admin-page__field">
+                            <label class="admin-page__label">Prompt Question</label>
+                            <input
+                                v-model="newSuggestion.prompt"
+                                type="text"
+                                class="admin-page__input"
+                                placeholder="What feature would you like to see next?"
+                                required
+                            />
+                        </div>
+
+                        <div class="admin-page__field">
+                            <label class="admin-page__label">Placeholder Text</label>
+                            <input
+                                v-model="newSuggestion.placeholder"
+                                type="text"
+                                class="admin-page__input"
+                                placeholder="e.g., Describe the feature you'd like..."
+                            />
+                        </div>
+
+                        <div class="admin-page__field">
+                            <label class="admin-page__label">Max Length (characters)</label>
+                            <input
+                                v-model.number="newSuggestion.max_length"
+                                type="number"
+                                class="admin-page__input"
+                                min="50"
+                                max="1000"
+                                placeholder="500"
+                            />
+                        </div>
+
+                        <div class="admin-page__field">
+                            <label class="admin-page__checkbox-label">
+                                <input v-model="newSuggestion.is_active" type="checkbox" />
+                                Activate immediately (auto-deactivates other active suggestions)
+                            </label>
+                        </div>
+
+                        <button type="submit" class="admin-page__btn" :disabled="suggestionCreating">
+                            {{ suggestionCreating ? 'Creating...' : 'Create Suggestion' }}
+                        </button>
+                    </form>
+
+                    <h3 class="admin-page__subsection-title" style="margin-top: 2rem;">Existing Suggestions & Responses</h3>
+                    <div v-if="suggestionsLoading" class="admin-page__empty">Loading...</div>
+                    <div v-else-if="!existingSuggestions.length" class="admin-page__empty">No suggestions created yet</div>
+                    <div v-else class="admin-page__suggestions-list">
+                        <div v-for="sug in existingSuggestions" :key="sug.id" class="admin-page__suggestion-card">
+                            <div class="admin-page__suggestion-header">
+                                <span class="admin-page__suggestion-title">{{ sug.prompt }}</span>
+                                <span
+                                    class="admin-page__badge"
+                                    :class="sug.is_active ? 'admin-page__badge--success' : 'admin-page__badge--inactive'"
+                                >
+                                    {{ sug.is_active ? 'Active' : 'Inactive' }}
+                                </span>
+                            </div>
+                            <div class="admin-page__suggestion-meta">
+                                <span>{{ sug.response_count || 0 }} responses</span>
+                                <span>•</span>
+                                <span>Max {{ sug.max_length }} chars</span>
+                            </div>
+                            <div class="admin-page__suggestion-actions">
+                                <button
+                                    type="button"
+                                    class="admin-page__btn admin-page__btn--sm"
+                                    @click="toggleSuggestionActive(sug.id, !sug.is_active)"
+                                >
+                                    {{ sug.is_active ? 'Deactivate' : 'Activate' }}
+                                </button>
+                                <button
+                                    type="button"
+                                    class="admin-page__btn admin-page__btn--sm"
+                                    @click="viewSuggestionResponses(sug.id)"
+                                >
+                                    View Responses
+                                </button>
+                                <button
+                                    type="button"
+                                    class="admin-page__btn admin-page__btn--sm admin-page__btn--danger"
+                                    @click="deleteSuggestion(sug.id)"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+
+                            <!-- Responses list (shown when viewing) -->
+                            <div v-if="viewingResponsesFor === sug.id" class="admin-page__responses-list">
+                                <div v-if="loadingResponses" class="admin-page__empty">Loading responses...</div>
+                                <div v-else-if="!suggestionResponses.length" class="admin-page__empty">No responses yet</div>
+                                <div v-else>
+                                    <div
+                                        v-for="resp in suggestionResponses"
+                                        :key="resp.id"
+                                        class="admin-page__response-item"
+                                    >
+                                        <div class="admin-page__response-text">{{ resp.response_text }}</div>
+                                        <div class="admin-page__response-meta">
+                                            {{ new Date(resp.created_at).toLocaleString() }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    class="admin-page__btn admin-page__btn--sm"
+                                    style="margin-top: 1rem;"
+                                    @click="viewingResponsesFor = null"
+                                >
+                                    Close Responses
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Donations Tab ────────────────────────────────────── -->
+                <div v-if="activeTab === 'donations'" class="admin-page__tab-content">
+                    <h2 class="admin-page__section-title">Donations Tracker</h2>
+
+                    <div class="admin-page__balance-card">
+                        <h3 class="admin-page__subsection-title">Live Wallet Balance</h3>
+                        <div v-if="cryptoLoading" class="admin-page__empty">Checking wallets...</div>
+                        <template v-else>
+                            <div class="admin-page__balance-row">
+                                <span>BTC</span>
+                                <span>${{ cryptoBtcUsd.toFixed(2) }}</span>
+                            </div>
+                            <div class="admin-page__balance-row">
+                                <span>LTC</span>
+                                <span>${{ cryptoLtcUsd.toFixed(2) }}</span>
+                            </div>
+                            <div class="admin-page__balance-row">
+                                <span>USDT (TRC20)</span>
+                                <span>${{ cryptoUsdtUsd.toFixed(2) }}</span>
+                            </div>
+                            <div class="admin-page__balance-row admin-page__balance-row--total">
+                                <span>Total</span>
+                                <span>${{ cryptoTotal.toFixed(2) }}</span>
+                            </div>
+                        </template>
+                        <button type="button" class="admin-page__btn admin-page__btn--sm" :disabled="cryptoLoading" @click="refreshCryptoBalance">
+                            {{ cryptoLoading ? 'Refreshing...' : 'Refresh Balance' }}
+                        </button>
+                    </div>
+
+                    <form @submit.prevent="handleSaveDonations">
+                        <div class="admin-page__field">
+                            <label class="admin-page__label" for="donation-raised">Manual Override Amount ($)</label>
+                            <input id="donation-raised" v-model.number="donationRaised" type="number" class="admin-page__input" min="0" step="0.01" placeholder="0">
+                            <p class="admin-page__hint">Only use if you want to override the auto-detected balance.</p>
+                        </div>
+                        <div class="admin-page__field">
+                            <label class="admin-page__label">
+                                <input v-model="donationPopupEnabled" type="checkbox" style="margin-right: 0.5rem;">
+                                Show donation popup on first visit
+                            </label>
+                        </div>
+                        <button type="submit" class="admin-page__btn" :disabled="donationLoading">
+                            <span>{{ donationLoading ? 'Saving...' : 'Save' }}</span>
+                        </button>
+                    </form>
+
+                    <button type="button" class="admin-page__btn admin-page__btn--donation" :disabled="donationNotifLoading" @click="handleDonationNotif">
+                        <span>{{ donationNotifLoading ? 'Sending...' : '❤️ Notify everyone — donation received!' }}</span>
+                    </button>
+                </div>
+
+                <!-- ── Ads Tab ──────────────────────────────────────────── -->
+                <div v-if="activeTab === 'ads'" class="admin-page__tab-content">
+                    <h2 class="admin-page__section-title">Ad Management</h2>
+                    <p class="admin-page__hint" style="margin-bottom:1.25rem">Turn ads on/off separately for PC and Mobile visitors.</p>
+
+                    <div class="admin-page__ads-grid">
+                        <div class="admin-page__ad-card">
+                            <div class="admin-page__ad-card-header">
+                                <span class="admin-page__ad-icon">📢</span>
+                                <span class="admin-page__ad-label">Ads PC</span>
+                            </div>
+                            <label class="admin-page__toggle">
+                                <input v-model="adsPcEnabled" type="checkbox" class="admin-page__toggle-input">
+                                <span class="admin-page__toggle-track">
+                                    <span class="admin-page__toggle-knob" />
+                                </span>
+                                <span class="admin-page__toggle-text">{{ adsPcEnabled ? 'Enabled' : 'Disabled' }}</span>
+                            </label>
+                            <p class="admin-page__hint" style="margin-top:0.5rem">Ads on desktop site.</p>
+                        </div>
+
+                        <div class="admin-page__ad-card">
+                            <div class="admin-page__ad-card-header">
+                                <span class="admin-page__ad-icon">📢</span>
+                                <span class="admin-page__ad-label">Ads Mobile</span>
+                            </div>
+                            <label class="admin-page__toggle">
+                                <input v-model="adsMobileEnabled" type="checkbox" class="admin-page__toggle-input">
+                                <span class="admin-page__toggle-track">
+                                    <span class="admin-page__toggle-knob" />
+                                </span>
+                                <span class="admin-page__toggle-text">{{ adsMobileEnabled ? 'Enabled' : 'Disabled' }}</span>
+                            </label>
+                            <p class="admin-page__hint" style="margin-top:0.5rem">Ads on mobile site.</p>
+                        </div>
+
+                        <div class="admin-page__ad-card">
+                            <div class="admin-page__ad-card-header">
+                                <span class="admin-page__ad-icon">🙈</span>
+                                <span class="admin-page__ad-label">Hide Support Button</span>
+                            </div>
+                            <label class="admin-page__toggle">
+                                <input v-model="supportBtnHidden" type="checkbox" class="admin-page__toggle-input">
+                                <span class="admin-page__toggle-track">
+                                    <span class="admin-page__toggle-knob" />
+                                </span>
+                                <span class="admin-page__toggle-text">{{ supportBtnHidden ? 'Hidden' : 'Visible' }}</span>
+                            </label>
+                            <p class="admin-page__hint" style="margin-top:0.5rem">Hides the Support button on both PC and mobile.</p>
+                        </div>
+
+                        <div class="admin-page__ad-card">
+                            <div class="admin-page__ad-card-header">
+                                <span class="admin-page__ad-icon">🔄</span>
+                                <span class="admin-page__ad-label">Stream Proxy</span>
+                            </div>
+                            <label class="admin-page__toggle">
+                                <input v-model="streamProxyEnabled" type="checkbox" class="admin-page__toggle-input">
+                                <span class="admin-page__toggle-track">
+                                    <span class="admin-page__toggle-knob" />
+                                </span>
+                                <span class="admin-page__toggle-text">{{ streamProxyEnabled ? 'Enabled' : 'Disabled' }}</span>
+                            </label>
+                            <p class="admin-page__hint" style="margin-top:0.5rem">Route video streams through VPS proxy. Turn off if VPS is overloaded.</p>
+                        </div>
+                    </div>
+
+                    <button type="button" class="admin-page__btn" :disabled="saveLoading" style="margin-top:1rem" @click="handleSaveSettings">
+                        <span>{{ saveLoading ? 'Saving...' : 'Save Settings' }}</span>
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <div class="admin-page__toast" :class="{ 'is-show': toast, 'is-success': toastType === 'success', 'is-error': toastType === 'error' }">
+            {{ toast }}
+        </div>
+    </div>
+</template>
+
+<script lang="ts" setup>
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { getSyncClient } from '../lib/syncClient'
+import { setServerOrder, fetchServerOrder } from '../composables/useStream'
+
+let sync: any = null
+const DEFAULT_PASSCODE = 'admin123'
+
+const authenticated = ref(false)
+const authLoading = ref(false)
+const saveLoading = ref(false)
+const save4kLoading = ref(false)
+const orderSaving = ref(false)
+const serverOrderList = ref<{ id: string; name: string }[]>([])
+const passcode = ref('')
+const newPasscode = ref('')
+const activeTab = ref('settings')
+
+const tabs = [
+    { key: 'settings', icon: '⚙️', label: 'Settings' },
+    { key: 'moderation', icon: '🛡️', label: 'Moderation & Word Filter' },
+    { key: '4k', icon: '🎬', label: '4K Curation' },
+    { key: 'notifications', icon: '🔔', label: 'Notifications' },
+    { key: 'banner', icon: '🏴', label: 'Banner' },
+    { key: 'polls', icon: '📊', label: 'Polls' },
+    { key: 'suggestions', icon: '💡', label: 'Suggestions & Engagement' },
+    { key: 'donations', icon: '💰', label: 'Donations' },
+    { key: 'ads', icon: '📢', label: 'Ads & Support' }
+]
+const toast = ref('')
+const toastType = ref<'success' | 'error'>('success')
+const searchQuery = ref('')
+const searchResults = ref<any[]>([])
+const selectedMovies = ref<any[]>([])
+let adminPasscode = DEFAULT_PASSCODE
+
+const settings = reactive({
+    defaultProvider: 'moovie',
+    defaultProviderMobile: 'moovie',
+    tmdbQuality: 'medium',
+    groqKeys: ['', '', '']
+})
+
+const youtubeApiKeys = ref<string[]>([''])
+const osApiKeys = ref<string[]>([''])
+const serverOverrides = ref<Record<string, string>>({})
+const newOverride = ref({
+    type: 'movie',
+    id: '',
+    server: 'Thor'
+})
+
+// ── Notifications ──────────────────────────────────────────────────────────────
+const notifTitle = ref('')
+const notifMessage = ref('')
+const notifType = ref('info')
+const notifLoading = ref(false)
+
+// ── Banner ─────────────────────────────────────────────────────────────────────
+const bannerMessage = ref('')
+const bannerLink = ref('')
+const bannerBgColor = ref('#ffffff')
+const bannerTextColor = ref('#ffffff')
+const bannerActive = ref(false)
+const bannerLoading = ref(false)
+
+// ── Moderation ─────────────────────────────────────────────────────────
+const bannedWordsText = ref('')
+const bannedWordsLoading = ref(false)
+const modComments = ref<any[]>([])
+const modFilterType = ref<'all' | 'flagged' | 'visible'>('all')
+const modSearchQuery = ref('')
+const modLoading = ref(false)
+
+const DEFAULT_PRESET_BANNED_WORDS = [
+    'fuck', 'shit', 'bitch', 'asshole', 'bastard', 'cunt', 'dick', 'pussy',
+    'slut', 'whore', 'nigger', 'faggot', 'retard', 'scam', 'spam', 'telegram', 'whatsapp'
+]
+
+// ── Polls ──────────────────────────────────────────────────────────────────────
+const pollQuestion = ref('')
+const pollOptionsText = ref('')
+const pollActive = ref(false)
+const pollLoading = ref(false)
+const existingPolls = ref<any[]>([])
+const pollResultsMap = ref<Record<number, any[]>>({})
+const pollVoteCounts = ref<Record<number, number>>({})
+
+// ── Suggestions ────────────────────────────────────────────────────────────────
+const newSuggestion = reactive({
+    prompt: '',
+    placeholder: 'Write your feedback here…',
+    max_length: 500,
+    is_active: false
+})
+const suggestionCreating = ref(false)
+const suggestionsLoading = ref(false)
+const existingSuggestions = ref<any[]>([])
+const viewingResponsesFor = ref<number | null>(null)
+const suggestionResponses = ref<any[]>([])
+const loadingResponses = ref(false)
+
+// ── Ads ──────────────────────────────────────────────────────────────────────────
+const adsPcEnabled = ref(false)
+const adsMobileEnabled = ref(false)
+const supportBtnHidden = ref(false)
+const streamProxyEnabled = ref(true)
+const clearCacheLoading = ref(false)
+
+// ── Donations ────────────────────────────────────────────────────────────────────
+const donationRaised = ref(0)
+const donationLoading = ref(false)
+const donationNotifLoading = ref(false)
+const donationPopupEnabled = ref(true)
+const cryptoBtcUsd = ref(0)
+const cryptoLtcUsd = ref(0)
+const cryptoUsdtUsd = ref(0)
+const cryptoTotal = ref(0)
+const cryptoLoading = ref(false)
+
+async function refreshCryptoBalance() {
+    cryptoLoading.value = true
+    const BTC_ADDR = 'bc1qkk0yyu8efu2gep5y59ev7s4j0wxnpxsfh4ympk'
+    const LTC_ADDR = 'ltc1qpnurrqnv466wa4uh6urh0ul5n4wu0rf8k5l25z'
+    const USDT_ADDR = 'TKfaywHdffM1iYdiSP3xFPajxgXwq2jmDG'
+    const USDT_CONTRACT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
+    try {
+        const [btcRes, ltcRes, usdtRes, priceRes] = await Promise.all([
+            fetch(`https://api.blockchair.com/bitcoin/address/${BTC_ADDR}?limit=0,1`).then(r => r.json()).catch(() => ({})),
+            fetch(`https://api.blockchair.com/litecoin/address/${LTC_ADDR}?limit=0,1`).then(r => r.json()).catch(() => ({})),
+            fetch(`https://api.trongrid.io/v1/accounts/${USDT_ADDR}?only_confirmed=true`).then(r => r.json()).catch(() => ({})),
+            fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,litecoin,tether&vs_currencies=usd').then(r => r.json()).catch(() => ({}))
+        ])
+        const btcBal = (btcRes?.data?.[BTC_ADDR]?.balance ?? 0) / 1e8
+        const ltcBal = (ltcRes?.data?.[LTC_ADDR]?.balance ?? 0) / 1e8
+        let usdtBal = 0
+        const tokens = usdtRes?.data?.[0]?.trc20 ?? []
+        for (const t of tokens) {
+            if (t[USDT_CONTRACT]) { usdtBal = Number(t[USDT_CONTRACT]) / 1e6; break }
+        }
+        const btcPrice = priceRes?.bitcoin?.usd ?? 0
+        const ltcPrice = priceRes?.litecoin?.usd ?? 0
+        cryptoBtcUsd.value = btcBal * btcPrice
+        cryptoLtcUsd.value = ltcBal * ltcPrice
+        cryptoUsdtUsd.value = usdtBal
+        cryptoTotal.value = cryptoBtcUsd.value + cryptoLtcUsd.value + cryptoUsdtUsd.value
+    } catch { /* ignore */ } finally {
+        cryptoLoading.value = false
+    }
+}
+
+function showToast(message: string, isSuccess = true) {
+    toast.value = message
+    toastType.value = isSuccess ? 'success' : 'error'
+    setTimeout(() => { toast.value = '' }, 3000)
+}
+
+async function handleAuthenticate() {
+    authLoading.value = true
+    try {
+        const client = await getSyncClient()
+        sync = client
+        const { data } = await client.from('app_settings').select('value').eq('key', 'admin_passcode').single()
+        if (data?.value) adminPasscode = data.value
+
+        if (passcode.value === adminPasscode) {
+            showToast('Access Granted!')
+            authenticated.value = true
+            await loadDashboardSettings()
+        } else {
+            showToast('Invalid passcode', false)
+        }
+    } catch {
+        if (passcode.value === DEFAULT_PASSCODE) {
+            showToast('Unlocked (using offline fallback)')
+            authenticated.value = true
+            await loadDashboardSettings()
+        } else {
+            showToast('Auth error. Make sure migrations are run.', false)
+        }
+    } finally {
+        authLoading.value = false
+    }
+}
+
+async function loadDashboardSettings() {
+    const client = sync || await getSyncClient()
+    try {
+        const { data } = await client.from('app_settings').select('value').eq('key', 'default_provider').single()
+        if (data?.value) settings.defaultProvider = data.value.toLowerCase()
+    } catch { /* ignore */ }
+
+    try {
+        const { data } = await client.from('app_settings').select('value').eq('key', 'default_provider_mobile').single()
+        if (data?.value) settings.defaultProviderMobile = data.value.toLowerCase()
+    } catch { /* ignore */ }
+
+    try {
+        const { data } = await client.from('app_settings').select('value').eq('key', 'tmdb_image_quality').single()
+        if (data?.value) settings.tmdbQuality = data.value
+    } catch { /* ignore */ }
+
+    try {
+        const { data } = await client.from('app_settings').select('value').eq('key', 'groq_keys').single()
+        if (data?.value) {
+            const keys = JSON.parse(data.value)
+            if (Array.isArray(keys)) {
+                if (keys[0]) settings.groqKeys[0] = keys[0]
+                if (keys[1]) settings.groqKeys[1] = keys[1]
+                if (keys[2]) settings.groqKeys[2] = keys[2]
+            }
+        }
+    } catch { /* ignore */ }
+
+    try {
+        const { data } = await client.from('app_settings').select('value').eq('key', 'youtube_api_keys').single()
+        if (data?.value) {
+            const keys = JSON.parse(data.value)
+            if (Array.isArray(keys) && keys.length) {
+                youtubeApiKeys.value = keys
+            }
+        }
+    } catch { /* ignore */ }
+
+    try {
+        const { data } = await client.from('app_settings').select('value').eq('key', 'opensubtitles_api_keys').single()
+        if (data?.value) {
+            const keys = JSON.parse(data.value)
+            if (Array.isArray(keys) && keys.length) {
+                osApiKeys.value = keys
+            }
+        }
+    } catch { /* ignore */ }
+
+    try {
+        const { data } = await client.from('app_settings').select('value').eq('key', 'default_server_overrides').single()
+        if (data?.value) {
+            const parsed = JSON.parse(data.value)
+            serverOverrides.value = parsed
+        }
+    } catch { /* ignore */ }
+
+    await load4KCuration()
+
+    try {
+        const { data } = await client.from('app_settings').select('value').eq('key', 'donation_raised').single()
+        if (data?.value) donationRaised.value = Number(data.value)
+    } catch { /* ignore */ }
+
+    try {
+        const { data } = await client.from('app_settings').select('value').eq('key', 'donation_popup_enabled').single()
+        if (data?.value) donationPopupEnabled.value = data.value === 'true'
+    } catch { /* ignore */ }
+
+    try {
+        const { data } = await client.from('app_settings').select('value').eq('key', 'ads_pc_enabled').single()
+        adsPcEnabled.value = data?.value === 'true'
+    } catch { /* ignore */ }
+
+    try {
+        const { data } = await client.from('app_settings').select('value').eq('key', 'ads_mobile_enabled').single()
+        adsMobileEnabled.value = data?.value === 'true'
+    } catch { /* ignore */ }
+
+    try {
+        const { data } = await client.from('app_settings').select('value').eq('key', 'support_btn_hidden').single()
+        supportBtnHidden.value = data?.value === 'true'
+    } catch { /* ignore */ }
+
+    try {
+        const { data } = await client.from('app_settings').select('value').eq('key', 'stream_proxy_enabled').single()
+        if (data) streamProxyEnabled.value = data.value === 'true'
+    } catch { /* ignore */ }
+
+    await loadServerOrder()
+}
+
+async function loadServerOrder() {
+    await fetchServerOrder()
+    serverOrderList.value = [{ id: 'moovie', name: 'Moovie' }]
+}
+
+function moveServer(index: number, direction: number) {
+    const newIndex = index + direction
+    if (newIndex < 0 || newIndex >= serverOrderList.value.length) return
+    const item = serverOrderList.value.splice(index, 1)[0]
+    serverOrderList.value.splice(newIndex, 0, item)
+}
+
+async function handleSaveOrder() {
+    orderSaving.value = true
+    const client = sync || await getSyncClient()
+    try {
+        const ids = serverOrderList.value.map(s => s.id)
+        await client.from('app_settings').upsert({ key: 'server_order', value: JSON.stringify(ids), updated_at: new Date() }, { onConflict: 'key' })
+        setServerOrder(ids)
+        showToast('Server order updated!')
+    } catch {
+        showToast('Failed to save order', false)
+    } finally {
+        orderSaving.value = false
+    }
+}
+
+async function handleSaveSettings() {
+    saveLoading.value = true
+    const client = sync || await getSyncClient()
+    try {
+        await client.from('app_settings').upsert({ key: 'default_provider', value: settings.defaultProvider, updated_at: new Date() }, { onConflict: 'key' })
+        await client.from('app_settings').upsert({ key: 'default_provider_mobile', value: settings.defaultProviderMobile, updated_at: new Date() }, { onConflict: 'key' })
+        await client.from('app_settings').upsert({ key: 'tmdb_image_quality', value: settings.tmdbQuality, updated_at: new Date() }, { onConflict: 'key' })
+
+        const keys = settings.groqKeys.filter(Boolean)
+        await client.from('app_settings').upsert({ key: 'groq_keys', value: JSON.stringify(keys), updated_at: new Date() }, { onConflict: 'key' })
+
+        const ytKeys = youtubeApiKeys.value.filter(Boolean)
+        await client.from('app_settings').upsert({ key: 'youtube_api_keys', value: JSON.stringify(ytKeys), updated_at: new Date() }, { onConflict: 'key' })
+
+        const osKeys = osApiKeys.value.filter(Boolean)
+        await client.from('app_settings').upsert({ key: 'opensubtitles_api_keys', value: JSON.stringify(osKeys), updated_at: new Date() }, { onConflict: 'key' })
+
+        if (newPasscode.value) {
+            await client.from('app_settings').upsert({ key: 'admin_passcode', value: newPasscode.value, updated_at: new Date() }, { onConflict: 'key' })
+            adminPasscode = newPasscode.value
+            newPasscode.value = ''
+        }
+
+        await client.from('app_settings').upsert({ key: 'ads_pc_enabled', value: String(adsPcEnabled.value), updated_at: new Date() }, { onConflict: 'key' })
+        await client.from('app_settings').upsert({ key: 'ads_mobile_enabled', value: String(adsMobileEnabled.value), updated_at: new Date() }, { onConflict: 'key' })
+        await client.from('app_settings').upsert({ key: 'support_btn_hidden', value: String(supportBtnHidden.value), updated_at: new Date() }, { onConflict: 'key' })
+        await client.from('app_settings').upsert({ key: 'stream_proxy_enabled', value: String(streamProxyEnabled.value), updated_at: new Date() }, { onConflict: 'key' })
+        await client.from('app_settings').upsert({ key: 'default_server_overrides', value: JSON.stringify(serverOverrides.value), updated_at: new Date() }, { onConflict: 'key' })
+
+        showToast('Settings updated successfully!')
+    } catch {
+        showToast('Failed to update settings in Sync', false)
+    } finally {
+        saveLoading.value = false
+    }
+}
+
+function addOverride() {
+    const idTrimmed = newOverride.value.id.trim()
+    if (!idTrimmed) {
+        showToast('Please enter a valid TMDB ID', false)
+        return
+    }
+    const key = `${newOverride.value.type}-${idTrimmed}`
+    serverOverrides.value[key] = newOverride.value.server
+    newOverride.value.id = ''
+    showToast(`Added override for ${key}`)
+}
+
+function deleteOverride(key: string) {
+    delete serverOverrides.value[key]
+    showToast(`Removed override for ${key}`)
+}
+
+function addYoutubeKey() {
+    youtubeApiKeys.value.push('')
+}
+
+function removeYoutubeKey(index: number) {
+    if (youtubeApiKeys.value.length > 1) {
+        youtubeApiKeys.value.splice(index, 1)
+    }
+}
+
+function addOsKey() {
+    osApiKeys.value.push('')
+}
+
+function removeOsKey(index: number) {
+    if (osApiKeys.value.length > 1) {
+        osApiKeys.value.splice(index, 1)
+    }
+}
+
+async function handleClearTmdbCache() {
+    clearCacheLoading.value = true
+    try {
+        // Upsert new cache bust timestamp to Sync for everyone
+        const client = sync || await getSyncClient()
+        await client.from('app_settings').upsert({ key: 'cache_bust_timestamp', value: new Date().toISOString(), updated_at: new Date() }, { onConflict: 'key' })
+
+        // Delete both old v1 and current v2 Cache Storage entries locally too
+        await caches.delete('tmdb-api-cache-v1')
+        await caches.delete('tmdb-api-cache-v2')
+        // Also wipe the localStorage poster cache
+        localStorage.removeItem('moovie_poster_cache_v1')
+        showToast('✅ Cache cleared globally for all users!', true)
+    } catch (e) {
+        console.error(e)
+        showToast('Failed to clear cache globally', false)
+    } finally {
+        clearCacheLoading.value = false
+    }
+}
+
+async function load4KCuration() {
+    const client = sync || await getSyncClient()
+    try {
+        const { data } = await client.from('app_settings').select('value').eq('key', '4k_movies_today').single()
+        if (data?.value) selectedMovies.value = JSON.parse(data.value)
+        else selectedMovies.value = []
+    } catch {
+        selectedMovies.value = []
+    }
+}
+
+async function handleSearch4K() {
+    if (!searchQuery.value.trim()) return
+    try {
+        const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=dfa4c2c7c1de1005adee824dc5593672&query=${encodeURIComponent(searchQuery.value)}&language=en-US&page=1`)
+        const data = await res.json()
+        searchResults.value = data.results || []
+    } catch {
+        searchResults.value = []
+        showToast('Error searching movies', false)
+    }
+}
+
+function isAlreadyAdded(id: number) {
+    return selectedMovies.value.some((m: any) => m.id === id)
+}
+
+function addMovie(movie: any) {
+    if (selectedMovies.value.length >= 10) return
+    selectedMovies.value.push({
+        id: movie.id,
+        title: movie.title || movie.original_title,
+        originalTitle: movie.original_title,
+        posterPath: movie.poster_path,
+        rating: movie.vote_average,
+        releaseDate: movie.release_date,
+        genreIds: movie.genre_ids,
+        adult: movie.adult,
+        type: 'movie'
+    })
+}
+
+function removeMovie(id: number) {
+    selectedMovies.value = selectedMovies.value.filter((m: any) => m.id !== id)
+}
+
+function moveItem(index: number, direction: number) {
+    const newIndex = index + direction
+    if (newIndex < 0 || newIndex >= selectedMovies.value.length) return
+    const arr = selectedMovies.value
+    const temp = arr[index]
+    arr[index] = arr[newIndex]
+    arr[newIndex] = temp
+}
+
+async function handleSave4K() {
+    save4kLoading.value = true
+    const client = sync || await getSyncClient()
+    try {
+        await client.from('app_settings').upsert({ key: '4k_movies_today', value: JSON.stringify(selectedMovies.value), updated_at: new Date() }, { onConflict: 'key' })
+        showToast('4K curation saved successfully!')
+    } catch {
+        showToast('Failed to save 4K curation in Sync', false)
+    } finally {
+        save4kLoading.value = false
+    }
+}
+
+// ── Donation Functions ──────────────────────────────────────────────────────────
+async function handleSaveDonations() {
+    donationLoading.value = true
+    const client = sync || await getSyncClient()
+    try {
+        await client.from('app_settings').upsert({ key: 'donation_raised', value: String(donationRaised.value), updated_at: new Date() }, { onConflict: 'key' })
+        await client.from('app_settings').upsert({ key: 'donation_popup_enabled', value: String(donationPopupEnabled.value), updated_at: new Date() }, { onConflict: 'key' })
+        showToast('Donation settings saved!')
+    } catch {
+        showToast('Failed to save donation settings', false)
+    } finally {
+        donationLoading.value = false
+    }
+}
+
+async function handleDonationNotif() {
+    donationNotifLoading.value = true
+    const client = sync || await getSyncClient()
+    try {
+        const amount = cryptoTotal.value > 0 ? `$${cryptoTotal.value.toFixed(2)}` : 'a donation'
+        await client.from('notifications').insert({
+            title: `❤️ Someone just donated ${amount}!`,
+            message: 'Thank you for keeping this thing running. 💛',
+            type: 'success',
+            created_by: 'admin',
+            created_at: new Date().toISOString()
+        })
+        showToast('Donation notification sent!')
+    } catch {
+        showToast('Failed to send notification', false)
+    } finally {
+        donationNotifLoading.value = false
+    }
+}
+
+// ── Notification Functions ─────────────────────────────────────────────────────
+async function handleSendNotification() {
+    if (!notifTitle.value.trim()) return
+    notifLoading.value = true
+    const client = sync || await getSyncClient()
+    try {
+        await client.from('notifications').insert({
+            title: notifTitle.value.trim(),
+            message: notifMessage.value.trim(),
+            type: notifType.value,
+            created_by: 'admin',
+            created_at: new Date().toISOString()
+        })
+        showToast('Notification sent to all users!')
+        notifTitle.value = ''
+        notifMessage.value = ''
+        notifType.value = 'info'
+    } catch {
+        showToast('Failed to send notification', false)
+    } finally {
+        notifLoading.value = false
+    }
+}
+
+// ── Banner Functions ───────────────────────────────────────────────────────────
+async function loadBannerSettings() {
+    const client = sync || await getSyncClient()
+    try {
+        const { data } = await client.from('banners').select('id, message, link, bg_color, text_color, is_active, created_at').order('created_at', { ascending: false }).limit(1).maybeSingle()
+        if (data) {
+            bannerMessage.value = data.message || ''
+            bannerLink.value = data.link || ''
+            bannerBgColor.value = data.bg_color || '#ffffff'
+            bannerTextColor.value = data.text_color || '#ffffff'
+            bannerActive.value = data.is_active || false
+        }
+    } catch { /* ignore */ }
+}
+
+async function handleSaveBanner() {
+    bannerLoading.value = true
+    const client = sync || await getSyncClient()
+    try {
+        const { data: existing } = await client.from('banners').select('id').order('created_at', { ascending: false }).limit(1).maybeSingle()
+        const payload = {
+            message: bannerMessage.value.trim(),
+            link: bannerLink.value.trim(),
+            bg_color: bannerBgColor.value || '#ffffff',
+            text_color: bannerTextColor.value || '#ffffff',
+            is_active: bannerActive.value,
+            updated_at: new Date().toISOString()
+        }
+        if (existing) {
+            await client.from('banners').update(payload).eq('id', existing.id)
+        } else {
+            await client.from('banners').insert({
+                ...payload,
+                created_at: new Date().toISOString()
+            })
+        }
+        showToast('Banner saved!')
+    } catch {
+        showToast('Failed to save banner', false)
+    } finally {
+        bannerLoading.value = false
+    }
+}
+
+// ── Poll Functions ─────────────────────────────────────────────────────────────
+async function loadExistingPolls() {
+    const client = sync || await getSyncClient()
+    try {
+        const { data } = await client.from('polls').select('id, question, options, is_active, created_at').order('created_at', { ascending: false })
+        existingPolls.value = (data || []).map((p: any) => ({
+            ...p,
+            options: typeof p.options === 'string' ? JSON.parse(p.options) : p.options
+        }))
+
+        if (existingPolls.value.length === 0) return
+
+        await Promise.all(
+            existingPolls.value.map(async (poll: any) => {
+                if (!poll.options || !Array.isArray(poll.options)) return
+
+                const counts = await Promise.all(
+                    poll.options.map(async (_: any, idx: number) => {
+                        const { count } = await client
+                            .from('poll_votes')
+                            .select('*', { count: 'exact', head: true })
+                            .eq('poll_id', poll.id)
+                            .eq('selected_option', idx)
+                        return count || 0
+                    })
+                )
+
+                const total = counts.reduce((a, b) => a + b, 0)
+                pollVoteCounts.value[poll.id] = total
+                pollResultsMap.value[poll.id] = poll.options.map((opt: string, i: number) => ({
+                    option: opt,
+                    count: counts[i],
+                    percentage: total > 0 ? Math.round((counts[i] / total) * 100) : 0
+                }))
+            })
+        )
+    } catch (err) {
+        console.error('Failed to load polls:', err)
+    }
+}
+
+
+async function handleCreatePoll() {
+    if (!pollQuestion.value.trim() || !pollOptionsText.value.trim()) return
+    const options = pollOptionsText.value.split('\n').map((s: string) => s.trim()).filter(Boolean)
+    if (options.length < 2) {
+        showToast('Please provide at least 2 options', false)
+        return
+    }
+    pollLoading.value = true
+    const client = sync || await getSyncClient()
+    try {
+        if (pollActive.value) {
+            await client.from('polls').update({ is_active: false, updated_at: new Date().toISOString() }).neq('id', 0)
+        }
+        await client.from('polls').insert({
+            question: pollQuestion.value.trim(),
+            options: JSON.stringify(options),
+            is_active: pollActive.value,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        })
+        showToast('Poll created!')
+        pollQuestion.value = ''
+        pollOptionsText.value = ''
+        pollActive.value = false
+        await loadExistingPolls()
+    } catch {
+        showToast('Failed to create poll', false)
+    } finally {
+        pollLoading.value = false
+    }
+}
+
+async function handleTogglePoll(poll: any) {
+    const client = sync || await getSyncClient()
+    try {
+        const newActive = !poll.is_active
+        if (newActive) {
+            await client.from('polls').update({ is_active: false, updated_at: new Date().toISOString() }).neq('id', poll.id)
+        }
+        await client.from('polls').update({ is_active: newActive, updated_at: new Date().toISOString() }).eq('id', poll.id)
+        poll.is_active = newActive
+        showToast(`Poll ${newActive ? 'activated' : 'deactivated'}!`)
+    } catch {
+        showToast('Failed to update poll', false)
+    }
+}
+
+async function handleDeletePoll(poll: any) {
+    if (!confirm(`Delete poll "${poll.question}"?`)) return
+    const client = sync || await getSyncClient()
+    try {
+        await client.from('poll_votes').delete().eq('poll_id', poll.id)
+        await client.from('polls').delete().eq('id', poll.id)
+        existingPolls.value = existingPolls.value.filter((p: any) => p.id !== poll.id)
+        showToast('Poll deleted!')
+    } catch {
+        showToast('Failed to delete poll', false)
+    }
+}
+
+async function handleNotifyPoll(poll: any) {
+    const client = sync || await getSyncClient()
+    try {
+        await client.from('notifications').insert({
+            title: 'New Poll',
+            message: poll.question,
+            type: 'info',
+            created_at: new Date().toISOString(),
+            created_by: 'admin'
+        })
+        showToast('Notification sent to all users!')
+    } catch {
+        showToast('Failed to send notification', false)
+    }
+}
+
+// ── Suggestions Functions ──────────────────────────────────────────────────────
+async function loadExistingSuggestions() {
+    const client = sync || await getSyncClient()
+    suggestionsLoading.value = true
+    try {
+        const { data, error } = await client
+            .from('suggestions')
+            .select('*')
+            .order('created_at', { ascending: false })
+        
+        if (error) throw error
+        
+        // Count responses for each suggestion
+        for (const sug of (data || [])) {
+            const { count } = await client
+                .from('suggestion_responses')
+                .select('*', { count: 'exact', head: true })
+                .eq('suggestion_id', sug.id)
+            sug.response_count = count || 0
+        }
+        
+        existingSuggestions.value = data || []
+    } catch (e) {
+        console.error('Failed to load suggestions:', e)
+        showToast('Failed to load suggestions', false)
+    } finally {
+        suggestionsLoading.value = false
+    }
+}
+
+async function handleCreateSuggestion() {
+    if (!newSuggestion.prompt.trim()) {
+        showToast('Please enter a prompt', false)
+        return
+    }
+    
+    suggestionCreating.value = true
+    const client = sync || await getSyncClient()
+    
+    try {
+        // If activating, deactivate all others first
+        if (newSuggestion.is_active) {
+            await client
+                .from('suggestions')
+                .update({ is_active: false, updated_at: new Date().toISOString() })
+                .neq('id', 0)
+        }
+        
+        const { error } = await client.from('suggestions').insert({
+            prompt: newSuggestion.prompt,
+            placeholder: newSuggestion.placeholder || 'Write your feedback here…',
+            max_length: newSuggestion.max_length || 500,
+            is_active: newSuggestion.is_active,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        })
+        
+        if (error) throw error
+        
+        showToast('Suggestion created successfully!')
+        
+        // Reset form
+        newSuggestion.prompt = ''
+        newSuggestion.placeholder = 'Write your feedback here…'
+        newSuggestion.max_length = 500
+        newSuggestion.is_active = false
+        
+        // Reload list
+        await loadExistingSuggestions()
+    } catch (e) {
+        console.error('Failed to create suggestion:', e)
+        showToast('Failed to create suggestion', false)
+    } finally {
+        suggestionCreating.value = false
+    }
+}
+
+async function toggleSuggestionActive(id: number, newActive: boolean) {
+    const client = sync || await getSyncClient()
+    try {
+        // If activating, deactivate all others first
+        if (newActive) {
+            await client
+                .from('suggestions')
+                .update({ is_active: false, updated_at: new Date().toISOString() })
+                .neq('id', id)
+        }
+        
+        await client
+            .from('suggestions')
+            .update({ is_active: newActive, updated_at: new Date().toISOString() })
+            .eq('id', id)
+        
+        const sug = existingSuggestions.value.find(s => s.id === id)
+        if (sug) sug.is_active = newActive
+        
+        showToast(`Suggestion ${newActive ? 'activated' : 'deactivated'}!`)
+    } catch (e) {
+        console.error('Failed to toggle suggestion:', e)
+        showToast('Failed to update suggestion', false)
+    }
+}
+
+async function viewSuggestionResponses(id: number) {
+    viewingResponsesFor.value = id
+    loadingResponses.value = true
+    suggestionResponses.value = []
+    
+    const client = sync || await getSyncClient()
+    try {
+        const { data, error } = await client
+            .from('suggestion_responses')
+            .select('*')
+            .eq('suggestion_id', id)
+            .order('created_at', { ascending: false })
+        
+        if (error) throw error
+        suggestionResponses.value = data || []
+    } catch (e) {
+        console.error('Failed to load responses:', e)
+        showToast('Failed to load responses', false)
+    } finally {
+        loadingResponses.value = false
+    }
+}
+
+async function deleteSuggestion(id: number) {
+    if (!confirm('Delete this suggestion and all its responses?')) return
+    
+    const client = sync || await getSyncClient()
+    try {
+        // Delete responses first
+        await client.from('suggestion_responses').delete().eq('suggestion_id', id)
+        
+        // Delete suggestion
+        await client.from('suggestions').delete().eq('id', id)
+        
+        existingSuggestions.value = existingSuggestions.value.filter(s => s.id !== id)
+        showToast('Suggestion deleted!')
+    } catch (e) {
+        console.error('Failed to delete suggestion:', e)
+        showToast('Failed to delete suggestion', false)
+    }
+}
+
+// ── Moderation Functions ───────────────────────────────────────────────────────
+async function loadModerationData() {
+    const client = sync || await getSyncClient()
+    modLoading.value = true
+    try {
+        const { data: settingRow } = await client
+            .from('app_settings')
+            .select('value')
+            .eq('key', 'banned_words')
+            .maybeSingle()
+        if (settingRow && settingRow.value) {
+            try {
+                const arr = JSON.parse(settingRow.value)
+                if (Array.isArray(arr)) bannedWordsText.value = arr.join('\n')
+            } catch {
+                bannedWordsText.value = String(settingRow.value)
+            }
+        }
+
+        const { data: comments } = await client
+            .from('movora_comments')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(150)
+        modComments.value = comments || []
+    } catch (e) {
+        console.error('Failed to load moderation data:', e)
+    } finally {
+        modLoading.value = false
+    }
+}
+
+async function handleSaveBannedWords() {
+    bannedWordsLoading.value = true
+    const client = sync || await getSyncClient()
+    try {
+        const wordList = bannedWordsText.value
+            .split('\n')
+            .map(w => w.trim().toLowerCase())
+            .filter(w => w.length > 0)
+
+        const uniqueList = Array.from(new Set(wordList))
+
+        await client.from('app_settings').upsert({
+            key: 'banned_words',
+            value: JSON.stringify(uniqueList),
+            updated_at: new Date().toISOString()
+        })
+        showToast(`Saved ${uniqueList.length} banned words/phrases!`)
+    } catch (e) {
+        showToast('Failed to save banned words', false)
+    } finally {
+        bannedWordsLoading.value = false
+    }
+}
+
+function handleLoadPresetBannedWords() {
+    const existing = bannedWordsText.value
+        .split('\n')
+        .map(w => w.trim().toLowerCase())
+        .filter(Boolean)
+    const combined = Array.from(new Set([...existing, ...DEFAULT_PRESET_BANNED_WORDS]))
+    bannedWordsText.value = combined.join('\n')
+    showToast('Loaded preset inappropriate word list!')
+}
+
+async function handleToggleHideComment(comment: any) {
+    const client = sync || await getSyncClient()
+    const newHidden = comment.is_hidden ? 0 : 1
+    try {
+        await client
+            .from('movora_comments')
+            .update({ is_hidden: newHidden })
+            .eq('id', comment.id)
+        comment.is_hidden = newHidden
+        showToast(newHidden ? 'Comment blocked / hidden!' : 'Comment restored!')
+    } catch (e) {
+        showToast('Failed to update comment status', false)
+    }
+}
+
+async function handleDeleteComment(comment: any) {
+    if (!confirm('Permanently delete this comment?')) return
+    const client = sync || await getSyncClient()
+    try {
+        await client.from('movora_comments').delete().eq('id', comment.id)
+        modComments.value = modComments.value.filter(c => c.id !== comment.id)
+        showToast('Comment permanently deleted!')
+    } catch (e) {
+        showToast('Failed to delete comment', false)
+    }
+}
+
+const filteredModComments = computed(() => {
+    let list = modComments.value
+    if (modFilterType.value === 'flagged') {
+        list = list.filter(c => c.is_hidden === 1 || c.is_hidden === true)
+    } else if (modFilterType.value === 'visible') {
+        list = list.filter(c => !c.is_hidden)
+    }
+    if (modSearchQuery.value.trim()) {
+        const q = modSearchQuery.value.toLowerCase().trim()
+        list = list.filter(c => 
+            (c.username || '').toLowerCase().includes(q) ||
+            (c.content || '').toLowerCase().includes(q)
+        )
+    }
+    return list
+})
+
+onMounted(() => {
+    getSyncClient().then(client => {
+        sync = client
+        loadBannerSettings()
+        loadExistingPolls()
+        loadExistingSuggestions()
+        loadModerationData()
+    })
+})
+
+watch(activeTab, (tab) => {
+    if (tab === 'donations') void refreshCryptoBalance()
+    if (tab === 'moderation') void loadModerationData()
+    if (tab === 'suggestions') void loadExistingSuggestions()
+})
+</script>
+
+<style scoped>
+.admin-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ink-900);
+    color: #e8e1d3;
+    font-family: 'General Sans', system-ui, sans-serif;
+    position: relative;
+    overflow-x: hidden;
+}
+
+.admin-page__orb {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(11, 10, 8, 0) 70%);
+    pointer-events: none;
+    filter: blur(60px);
+}
+
+.orb-left { top: -15%; left: -15%; }
+.orb-right { bottom: -15%; right: -15%; }
+
+.admin-page__container {
+    width: 100%;
+    max-width: 640px;
+    padding: 2.75rem;
+    background: rgba(19, 17, 14, 0.7);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(245, 239, 228, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6), 0 0 60px rgba(255, 255, 255, 0.08);
+    z-index: 10;
+}
+
+.admin-page__title {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 2.25rem;
+    letter-spacing: -0.02em;
+    color: #f5efe4;
+    margin-bottom: 0.5rem;
+}
+
+.admin-page__subtitle {
+    color: #a79f8d;
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+}
+
+.admin-page__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.5rem;
+}
+
+.admin-page__tab {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(245, 239, 228, 0.03);
+    border: 1px solid rgba(245, 239, 228, 0.08);
+    border-radius: 8px;
+    color: #a79f8d;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.admin-page__tab:hover {
+    background: rgba(245, 239, 228, 0.06);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #e8e1d3;
+}
+
+.admin-page__tab.is-active {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: #ffffff;
+    color: #ffffff;
+}
+
+.admin-page__tab-icon {
+    font-size: 0.9rem;
+}
+
+.admin-page__field {
+    margin-bottom: 1.5rem;
+}
+
+.admin-page__label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8a8270;
+    margin-bottom: 0.5rem;
+}
+
+.admin-page__input,
+.admin-page__select {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    background: rgba(245, 239, 228, 0.03);
+    border: 1px solid rgba(245, 239, 228, 0.08);
+    border-radius: 8px;
+    color: #e8e1d3;
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    box-sizing: border-box;
+}
+
+.admin-page__input + .admin-page__input {
+    margin-top: 0.5rem;
+}
+
+.admin-page__select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c7bfb0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
+}
+
+.admin-page__input:focus,
+.admin-page__select:focus {
+    border-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+    background: rgba(245, 239, 228, 0.05);
+}
+
+.admin-page__btn {
+    width: 100%;
+    padding: 0.875rem;
+    background: #ffffff;
+    color: #0b0a08;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.25);
+    font-family: inherit;
+}
+
+.admin-page__btn:hover { background: #ffffff; box-shadow: 0 6px 16px rgba(255, 255, 255, 0.4); transform: translateY(-1px); }
+.admin-page__btn:active { transform: translateY(0); }
+.admin-page__btn:disabled { background: #8a8270; color: #0b0a08; cursor: not-allowed; box-shadow: none; }
+.admin-page__btn--sm { width: auto; padding: 0.4rem 0.8rem; font-size: 0.8rem; box-shadow: none; }
+
+.admin-page__hint {
+    font-size: 0.75rem;
+    color: #a79f8d;
+    margin-top: 0.25rem;
+    line-height: 1.5;
+}
+
+.admin-page__curation {
+    margin-top: 2.5rem;
+    border-top: 1px solid rgba(245, 239, 228, 0.08);
+    padding-top: 2rem;
+}
+
+.admin-page__section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.5rem;
+    color: #f5efe4;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-page__curation-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: #8a8270;
+}
+
+.admin-page__search-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.admin-page__list {
+    list-style: none;
+    background: rgba(245, 239, 228, 0.02);
+    border: 1px solid rgba(245, 239, 228, 0.08);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    padding: 0.25rem 0;
+}
+
+.admin-page__list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(245, 239, 228, 0.08);
+    gap: 1rem;
+}
+
+.admin-page__list-item:last-child { border-bottom: none; }
+
+.admin-page__item-details {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+}
+
+.admin-page__item-title {
+    font-weight: 500;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #e8e1d3;
+}
+
+.admin-page__item-meta {
+    font-size: 0.75rem;
+    color: #8a8270;
+    margin-top: 0.15rem;
+}
+
+.admin-page__item-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.admin-page__icon-btn {
+    background: transparent;
+    border: none;
+    color: #a79f8d;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    width: 28px;
+    height: 28px;
+    transition: all 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    font-family: inherit;
+}
+
+.admin-page__icon-btn:hover:not(:disabled) { background: rgba(255,255,255,0.08); color: #f5efe4; }
+.admin-page__icon-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+.admin-page__icon-btn--danger:hover { color: #ff8a80; background: rgba(197,78,61,0.15); }
+
+.admin-page__empty {
+    padding: 1.5rem;
+    text-align: center;
+    color: #8a8270;
+    font-size: 0.9rem;
+}
+
+.admin-page__server-grid {
+    background: rgba(245, 239, 228, 0.02);
+    border: 1px solid rgba(245, 239, 228, 0.08);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-top: 2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.775rem;
+    max-height: 140px;
+    overflow-y: auto;
+}
+
+.admin-page__server-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.35rem 0;
+    color: #a79f8d;
+    border-bottom: 1px solid rgba(245, 239, 228, 0.04);
+}
+
+.admin-page__server-row:last-child { border-bottom: none; }
+.admin-page__server-row strong { color: #e8e1d3; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em; }
+.admin-page__server-row span:first-child { color: #ffffff; }
+
+.admin-page__section-divider {
+    height: 1px;
+    background: rgba(245, 239, 228, 0.08);
+    margin: 2rem 0;
+}
+
+.admin-page__cache-card {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+}
+
+.admin-page__cache-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    flex: 1;
+}
+
+.admin-page__cache-icon {
+    font-size: 1.8rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.admin-page__cache-title {
+    color: #e8e1d3;
+    font-size: 0.95rem;
+    display: block;
+}
+
+.admin-page__btn--danger {
+    background: linear-gradient(135deg, #c0392b, #e74c3c);
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.admin-page__btn--danger:hover:not(:disabled) {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    transform: translateY(-1px);
+}
+
+.admin-page__textarea {
+    resize: vertical;
+    font-family: inherit;
+}
+
+.admin-page__subsection-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.15rem;
+    color: #c7bfb0;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+}
+
+.admin-page__btn--danger {
+    background: #8a2a1e;
+    color: #f5efe4;
+    box-shadow: none;
+}
+
+.admin-page__btn--danger:hover {
+    background: #a63a2e;
+}
+
+.admin-page__poll-card {
+    background: rgba(245, 239, 228, 0.03);
+    border: 1px solid rgba(245, 239, 228, 0.08);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* ── Suggestions Styles ───────────────────────────────────────────────────── */
+.admin-page__suggestions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.admin-page__suggestion-card {
+    background: rgba(245, 239, 228, 0.03);
+    border: 1px solid rgba(245, 239, 228, 0.08);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.admin-page__suggestion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.admin-page__suggestion-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--bone-100);
+}
+
+.admin-page__suggestion-meta {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--bone-400);
+    margin-bottom: 0.75rem;
+}
+
+.admin-page__suggestion-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.admin-page__responses-list {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(245, 239, 228, 0.08);
+}
+
+.admin-page__response-item {
+    background: rgba(245, 239, 228, 0.02);
+    border: 1px solid rgba(245, 239, 228, 0.06);
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.admin-page__response-text {
+    font-size: 0.875rem;
+    color: var(--bone-200);
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+.admin-page__response-meta {
+    font-size: 0.7rem;
+    color: var(--bone-400);
+}
+
+.admin-page__badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+
+.admin-page__badge--success {
+    background: rgba(107, 163, 104, 0.15);
+    color: var(--success);
+}
+
+.admin-page__badge--inactive {
+    background: rgba(167, 159, 141, 0.15);
+    color: var(--bone-400);
+}
+
+.admin-page__checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--bone-200);
+    cursor: pointer;
+    
+    input[type="checkbox"] {
+        margin: 0;
+        width: auto;
+        cursor: pointer;
+    }
+}
+
+.admin-page__poll-card {
+    background: rgba(245, 239, 228, 0.03);
+    border: 1px solid rgba(245, 239, 228, 0.08);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.admin-page__poll-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.admin-page__poll-question {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #e8e1d3;
+}
+
+.admin-page__poll-status {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(167, 159, 141, 0.15);
+    color: #a79f8d;
+}
+
+.admin-page__poll-status.is-active {
+    background: rgba(107, 163, 104, 0.15);
+    color: #6ba368;
+}
+
+.admin-page__poll-results {
+    margin-bottom: 0.75rem;
+}
+
+.admin-page__poll-result-row {
+    margin-bottom: 0.5rem;
+}
+
+.admin-page__poll-result-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #a79f8d;
+    margin-bottom: 2px;
+}
+
+.admin-page__poll-bar-bg {
+    height: 6px;
+    background: rgba(245, 239, 228, 0.06);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.admin-page__poll-bar-fill {
+    height: 100%;
+    background: #ffffff;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.admin-page__poll-total {
+    font-size: 0.7rem;
+    color: #8a8270;
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.admin-page__poll-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.admin-page__toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    background: rgba(19, 17, 14, 0.7);
+    border: 1px solid rgba(245, 239, 228, 0.08);
+    color: #e8e1d3;
+    font-size: 0.9rem;
+    font-weight: 500;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 100;
+}
+
+.admin-page__toast.is-show { transform: translateY(0); opacity: 1; }
+.admin-page__toast.is-success { border-left: 4px solid #6ba368; }
+.admin-page__toast.is-error { border-left: 4px solid #c94e3d; }
+
+.admin-page__balance-card {
+    background: rgba(19, 17, 14, 0.7);
+    border: 1px solid rgba(245, 239, 228, 0.08);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.admin-page__balance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    font-size: 0.85rem;
+    color: #c4bda8;
+}
+
+.admin-page__balance-row--total {
+    border-top: 1px solid rgba(245, 239, 228, 0.1);
+    margin-top: 0.4rem;
+    padding-top: 0.6rem;
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 1rem;
+}
+
+.admin-page__btn--donation {
+    margin-top: 1rem;
+    width: 100%;
+    background: #ffffff;
+    color: #fff;
+    border: none;
+}
+
+.admin-page__btn--donation:hover:not(:disabled) {
+    background: #e04e1a;
+}
+
+.admin-page__ads-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.admin-page__ad-card {
+    background: rgba(19, 17, 14, 0.7);
+    border: 1px solid rgba(245, 239, 228, 0.08);
+    border-radius: 8px;
+    padding: 1.25rem;
+}
+
+.admin-page__ad-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.admin-page__ad-icon {
+    font-size: 1.5rem;
+}
+
+.admin-page__ad-label {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: #c7bfb0;
+}
+
+.admin-page__toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.admin-page__toggle-input {
+    display: none;
+}
+
+.admin-page__toggle-track {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: rgba(245, 239, 228, 0.12);
+    border-radius: 12px;
+    transition: background 0.3s ease;
+}
+
+.admin-page__toggle-input:checked + .admin-page__toggle-track {
+    background: #ffffff;
+}
+
+.admin-page__toggle-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: #f5efe4;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.admin-page__toggle-input:checked + .admin-page__toggle-track .admin-page__toggle-knob {
+    transform: translateX(20px);
+}
+
+.admin-page__toggle-text {
+    font-size: 0.85rem;
+    color: #a79f8d;
+}
+
+.admin-page__reorder-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(19, 17, 14, 0.7);
+    border: 1px solid rgba(245, 239, 228, 0.08);
+    border-radius: 6px;
+    margin-bottom: 0.35rem;
+}
+.admin-page__reorder-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.admin-page__reorder-btn {
+    background: rgba(245, 239, 228, 0.06);
+    border: 1px solid rgba(245, 239, 228, 0.1);
+    color: #c7bfb0;
+    width: 24px;
+    height: 18px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+.admin-page__reorder-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+.admin-page__reorder-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+.admin-page__reorder-idx {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: #8a8270;
+    min-width: 1.2rem;
+    text-align: right;
+}
+.admin-page__reorder-name {
+    flex: 1;
+    font-size: 0.85rem;
+    color: #e8e1d3;
+}
+.admin-page__reorder-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: #8a8270;
+    text-transform: uppercase;
+}
+</style>

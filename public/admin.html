@@ -1,0 +1,3045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieAce · Widescreen Admin Dashboard</title>
+    <!-- Google Fonts & Fontshare -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://api.fontshare.com/v2/css?f[]=general-sans@200,300,400,500,600,700&display=swap" rel="stylesheet">
+    
+    <!-- Self-hosted sync client -->
+    <script src="/party/party-sync.js"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #0b0a08;
+            --bg-card: rgba(19, 17, 14, 0.75);
+            --rule: rgba(245, 239, 228, 0.08);
+            --rule-strong: rgba(245, 239, 228, 0.16);
+            --ember: #ff5a1f;
+            --ember-600: #e84817;
+            --ember-glow: rgba(255, 90, 31, 0.3);
+            --success: #6ba368;
+            --danger: #c94e3d;
+            --bone-50: #f5efe4;
+            --bone-100: #e8e1d3;
+            --bone-200: #c7bfb0;
+            --bone-300: #a79f8d;
+            --bone-400: #8a8270;
+            --font-display: 'Fraunces', serif;
+            --font-ui: 'General Sans', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --r-lg: 14px;
+            --r-md: 8px;
+            --transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-ui);
+            background-color: var(--bg-dark);
+            color: var(--bone-100);
+            min-height: 100vh;
+            padding: 1.5rem;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .orb {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--ember-glow) 0%, rgba(11, 10, 8, 0) 70%);
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(80px);
+        }
+        .orb-left { top: -20%; left: -10%; }
+        .orb-right { bottom: -20%; right: -10%; }
+
+        /* Widescreen Main Container */
+        .container {
+            width: 100%;
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 2.25rem;
+            background: var(--bg-card);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--rule-strong);
+            border-radius: var(--r-lg);
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6), 0 0 60px rgba(255, 90, 31, 0.08);
+            z-index: 10;
+            position: relative;
+        }
+
+        /* Passcode Auth View Centered Box */
+        #auth-view.view-section {
+            max-width: 460px;
+            margin: 4rem auto;
+            text-align: center;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.75rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--rule);
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-weight: 500;
+            font-size: 2rem;
+            letter-spacing: -0.02em;
+            color: var(--bone-50);
+        }
+
+        .subtitle {
+            color: var(--bone-300);
+            font-size: 0.88rem;
+            line-height: 1.4;
+        }
+
+        /* Responsive Navigation Tabs Bar */
+        .admin-tabs-nav {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            background: rgba(245, 239, 228, 0.03);
+            border: 1px solid var(--rule);
+            border-radius: var(--r-md);
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            padding: 0.6rem 1.15rem;
+            border-radius: 6px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--bone-300);
+            font-size: 0.88rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--bone-50);
+            background: rgba(245, 239, 228, 0.06);
+        }
+
+        .tab-btn.active {
+            background: rgba(255, 90, 31, 0.2);
+            border-color: rgba(255, 90, 31, 0.4);
+            color: var(--bone-50);
+            font-weight: 600;
+            box-shadow: 0 0 15px rgba(255, 90, 31, 0.2);
+        }
+
+        /* Tab Pages */
+        .tab-page {
+            display: none;
+            animation: fadeIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .tab-page.active {
+            display: block;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--bone-400);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            background: rgba(245, 239, 228, 0.03);
+            border: 1px solid var(--rule);
+            border-radius: var(--r-md);
+            color: var(--bone-100);
+            font-family: inherit;
+            font-size: 0.925rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c7bfb0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+            padding-right: 2.5rem;
+        }
+
+        .form-input:focus, .form-select:focus {
+            border-color: var(--ember);
+            box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.15);
+            background: rgba(245, 239, 228, 0.05);
+        }
+
+        .btn {
+            padding: 0.85rem 1.5rem;
+            background: var(--ember);
+            color: var(--bg-dark);
+            border: none;
+            border-radius: var(--r-md);
+            font-weight: 600;
+            font-size: 0.925rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(255, 90, 31, 0.25);
+        }
+
+        .btn:hover {
+            background: var(--ember-600);
+            box-shadow: 0 6px 16px rgba(255, 90, 31, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            background: var(--bone-400);
+            color: var(--bg-dark);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .balance-card {
+            background: rgba(245, 239, 228, 0.02);
+            border: 1px solid var(--rule);
+            border-radius: var(--r-md);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        .balance-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            font-size: 0.95rem;
+            color: var(--bone-200);
+            border-bottom: 1px solid var(--rule);
+        }
+        .balance-row--total {
+            font-weight: 700;
+            color: var(--ember);
+            border-bottom: none;
+            font-size: 1.05rem;
+            padding-top: 0.6rem;
+        }
+        .btn--sm {
+            padding: 0.4rem 0.85rem;
+            font-size: 0.8rem;
+        }
+        .btn--donation {
+            background: linear-gradient(135deg, var(--ember), var(--ember-600));
+            color: #fff;
+            margin-top: 1rem;
+        }
+
+        .ad-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(245, 239, 228, 0.02);
+            border: 1px solid var(--rule);
+            border-radius: var(--r-md);
+            padding: 0.85rem 1rem;
+        }
+
+        .ad-row__label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--bone-200);
+        }
+
+        .toggle-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            cursor: pointer;
+        }
+        .toggle-switch input { display: none; }
+        .toggle-slider {
+            position: relative;
+            width: 40px;
+            height: 22px;
+            background: rgba(245, 239, 228, 0.12);
+            border-radius: 11px;
+            transition: background 0.3s;
+        }
+        .toggle-switch input:checked + .toggle-slider { background: var(--ember); }
+        .toggle-knob {
+            position: absolute;
+            top: 2px; left: 2px; width: 18px; height: 18px;
+            background: #f5efe4; border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        .toggle-switch input:checked + .toggle-slider .toggle-knob { transform: translateX(18px); }
+        .toggle-status { font-size: 0.8rem; color: var(--bone-300); min-width: 4rem; }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+        .toast {
+            position: fixed; bottom: 2rem; right: 2rem;
+            padding: 1rem 1.5rem; border-radius: var(--r-md);
+            background: var(--bg-card); border: 1px solid var(--rule);
+            color: var(--bone-100); font-size: 0.9rem; font-weight: 500;
+            backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex; align-items: center; gap: 0.75rem;
+            transform: translateY(100px); opacity: 0;
+            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1); z-index: 100;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast-success { border-left: 4px solid var(--success); }
+        .toast-error { border-left: 4px solid var(--danger); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .server-grid {
+            background: rgba(245, 239, 228, 0.02);
+            border: 1px solid var(--rule); border-radius: var(--r-md);
+            padding: 1.25rem; margin-top: 1.5rem;
+            font-family: var(--font-mono); font-size: 0.775rem;
+            max-height: 180px; overflow-y: auto;
+        }
+        .server-grid-item {
+            display: flex; justify-content: space-between;
+            padding: 0.35rem 0; color: var(--bone-300);
+            border-bottom: 1px solid rgba(245, 239, 228, 0.04);
+        }
+        .server-grid-item strong { color: var(--bone-100); text-transform: uppercase; font-size: 0.8rem; }
+        .server-grid-item span:first-child { color: var(--ember); }
+
+        .reorder-item {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem 0.75rem; background: rgba(19, 17, 14, 0.7);
+            border: 1px solid rgba(245, 239, 228, 0.08); border-radius: 6px; margin-bottom: 0.35rem;
+        }
+        .reorder-btn {
+            background: rgba(245, 239, 228, 0.06); border: 1px solid rgba(245, 239, 228, 0.1);
+            color: #f5efe4; width: 26px; height: 26px; border-radius: 4px; cursor: pointer;
+        }
+        .provider-manager {
+            margin-top: 1.5rem;
+            display: grid;
+            gap: 0.45rem;
+        }
+        .provider-manager-row {
+            display: grid;
+            grid-template-columns: auto auto 1fr auto auto auto;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0.75rem;
+            background: rgba(19, 17, 14, 0.7);
+            border: 1px solid rgba(245, 239, 228, 0.08);
+            border-radius: 6px;
+        }
+        .provider-manager-row.is-starred {
+            border-color: rgba(244, 201, 93, 0.2);
+            background: rgba(244, 201, 93, 0.04);
+        }
+        .provider-star-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            border: 1px solid rgba(245, 239, 228, 0.1);
+            background: rgba(245, 239, 228, 0.06);
+            color: var(--bone-400);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .provider-star-btn.is-starred {
+            color: #f4c95d;
+            background: rgba(244, 201, 93, 0.12);
+            border-color: rgba(244, 201, 93, 0.25);
+        }
+        .provider-manager-id {
+            color: var(--bone-400);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+        }
+        .provider-manager-meta {
+            color: var(--bone-300);
+            font-size: 0.75rem;
+        }
+        .provider-action-btn {
+            padding: 0.42rem 0.6rem;
+            border-radius: 6px;
+            border: 1px solid rgba(245, 239, 228, 0.1);
+            background: rgba(245, 239, 228, 0.06);
+            color: var(--bone-100);
+            cursor: pointer;
+            font-size: 0.74rem;
+        }
+        .provider-action-btn:hover {
+            background: rgba(245, 239, 228, 0.12);
+        }
+        .provider-action-btn--danger {
+            color: #ff8d8d;
+            border-color: rgba(239, 68, 68, 0.25);
+        }
+        .provider-mode-select {
+            min-width: 112px;
+            font-size: 0.78rem;
+            padding: 0.45rem 0.55rem;
+        }
+        .provider-panels {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .provider-panel {
+            padding: 1rem;
+            border: 1px solid rgba(245, 239, 228, 0.08);
+            border-radius: 8px;
+            background: rgba(19, 17, 14, 0.46);
+        }
+        .provider-panel__head {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 0.85rem;
+        }
+        .provider-panel__title {
+            margin: 0;
+            font-family: var(--font-display);
+            font-size: 1rem;
+            color: var(--bone-50);
+        }
+        .provider-panel__sub {
+            margin: 0.2rem 0 0;
+            color: var(--bone-300);
+            font-size: 0.78rem;
+        }
+        .provider-editor-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(4, 3, 2, 0.78);
+            backdrop-filter: blur(16px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+        .provider-editor-modal.is-open {
+            display: flex;
+        }
+        .provider-editor-card {
+            width: min(1100px, 100%);
+            max-height: 90vh;
+            overflow: hidden;
+            border-radius: 16px;
+            border: 1px solid rgba(245, 239, 228, 0.1);
+            background: #0f0d0b;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+        }
+        .provider-editor-head {
+            padding: 1rem 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 1px solid rgba(245, 239, 228, 0.08);
+        }
+        .provider-editor-body {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 1rem;
+            padding: 1rem;
+            min-height: 0;
+        }
+        .provider-editor-meta {
+            display: grid;
+            gap: 0.5rem;
+            align-content: start;
+        }
+        .provider-editor-meta .meta-card {
+            padding: 0.75rem;
+            border-radius: 10px;
+            background: rgba(245, 239, 228, 0.04);
+            border: 1px solid rgba(245, 239, 228, 0.08);
+            font-size: 0.8rem;
+            color: var(--bone-300);
+        }
+        .provider-editor-content {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            gap: 0.75rem;
+        }
+        .provider-editor-textarea {
+            width: 100%;
+            flex: 1;
+            min-height: 55vh;
+            resize: vertical;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        .provider-editor-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            padding: 0 1rem 1rem;
+        }
+
+        .cache-card {
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem;
+            background: rgba(255, 90, 31, 0.06); border: 1px solid rgba(255, 90, 31, 0.2);
+            border-radius: var(--r-md); padding: 1.25rem 1.5rem; margin-top: 1.5rem;
+        }
+        .cache-info { display: flex; align-items: flex-start; gap: 1rem; flex: 1; }
+        .btn-danger { background: linear-gradient(135deg, #c0392b, #e74c3c); color: #fff; }
+
+        .curation-section {
+            background: rgba(245, 239, 228, 0.02);
+            border: 1px solid var(--rule); border-radius: var(--r-md);
+            padding: 1.5rem; margin-bottom: 1.5rem;
+        }
+        .section-title { font-family: var(--font-display); font-size: 1.35rem; color: var(--bone-50); margin-bottom: 0.75rem; }
+    </style>
+</head>
+<body>
+    <div class="orb orb-left"></div>
+    <div class="orb orb-right"></div>
+
+    <div class="container" id="widget-container">
+        
+        <!-- PASSCODE AUTHENTICATION VIEW -->
+        <section id="auth-view" class="view-section active">
+            <h1>Admin Gateway</h1>
+            <p class="subtitle">Access settings dashboard to configure defaults.</p>
+            <form onsubmit="handleAuthenticate(event)">
+                <div class="form-group">
+                    <label class="form-label" for="admin-passcode-input">Passcode</label>
+                    <input type="password" id="admin-passcode-input" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn" id="auth-btn">
+                    <span>Unlock Dashboard</span>
+                </button>
+            </form>
+        </section>
+
+        <!-- DASHBOARD VIEW (Widescreen Tabbed Architecture) -->
+        <section id="dashboard-view" class="view-section">
+            <header class="admin-header">
+                <div>
+                    <h1>Moovie Admin</h1>
+                    <p class="subtitle">Site configuration, moderation & management control panel</p>
+                </div>
+            </header>
+
+            <!-- Navigation Tabs Bar -->
+            <nav class="admin-tabs-nav">
+                <button type="button" class="tab-btn active" id="tab-btn-settings" onclick="switchHtmlTab('settings')">
+                    ⚙️ Settings & Players
+                </button>
+                <button type="button" class="tab-btn" id="tab-btn-moderation" onclick="switchHtmlTab('moderation')">
+                    🛡️ Moderation & Filter
+                </button>
+                <button type="button" class="tab-btn" id="tab-btn-curation" onclick="switchHtmlTab('curation')">
+                    🎬 4K Curation
+                </button>
+                <button type="button" class="tab-btn" id="tab-btn-polls" onclick="switchHtmlTab('polls')">
+                    📊 Polls
+                </button>
+                <button type="button" class="tab-btn" id="tab-btn-suggestions" onclick="switchHtmlTab('suggestions')">
+                    💡 Suggestions
+                </button>
+                <button type="button" class="tab-btn" id="tab-btn-donations" onclick="switchHtmlTab('donations')">
+                    💰 Donations
+                </button>
+                <button type="button" class="tab-btn" id="tab-btn-ads" onclick="switchHtmlTab('ads')">
+                    📢 Ads & Proxy
+                </button>
+                <button type="button" class="tab-btn" id="tab-btn-serverorder" onclick="switchHtmlTab('serverorder')">
+                    ⚡ Server Order & Cache
+                </button>
+            </nav>
+
+            <!-- TAB 1: SETTINGS & PLAYERS -->
+            <div class="tab-page active" id="tab-page-settings">
+                <form onsubmit="handleSaveSettings(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="default-provider-select">Default Stream Player (PC)</label>
+                            <select id="default-provider-select" class="form-select">
+                                <option value="moovie">Moovie (Hub)</option>
+                                <option value="sugar">Sugar (vidcodin.net)</option>
+                                <option value="rasmalai">Rasmalai (sweet server)</option>
+                                <option value="cinemaos">Gulab Jamun (CinemaOS)</option>
+                                <option value="smashy">Jalebi (SmashyStream)</option>
+                                <option value="mappletv">Kaju Katli (MappleTV)</option>
+                                <option value="vidsuper">Motichoor Ladoo (Vidsuper)</option>
+                                <option value="vidking">Kheer (VidKing)</option>
+                                <option value="videasy">Barfi (VidEasy)</option>
+                                <option value="vidsrc_ru">Laddu (VidSrc.ru)</option>
+                                <option value="vidsrc_su">Peda (VidSrc.su)</option>
+                                <option value="vidsrcme">Gajar Ka Halwa (VidSrcMe)</option>
+                                <option value="multiembed">Soan Papdi (MultiEmbed)</option>
+                                <option value="vsrc">Sandesh (vsrc.su)</option>
+                                <option value="vidlink">Cham Cham (VidLink)</option>
+                                <option value="autoembed">Kulfi (AutoEmbed)</option>
+                                <option value="vidfast">Mysore Pak (VidFast)</option>
+                                <option value="movies111">Imarti (111Movies)</option>
+                                <option value="vidora">Ghevar (Vidora)</option>
+                                <option value="icecream">Icecream (Videasy)</option>
+                                <option value="cinezo">Cheesecake (Cinezo)</option>
+                                <option value="nankhatai">Nankhatai (NontonGo)</option>
+                                <option value="petha">Petha (NontonGo)</option>
+                                <option value="spoider">Spoider (screenscape.me)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="default-provider-mobile-select">Default Stream Player (Mobile)</label>
+                            <select id="default-provider-mobile-select" class="form-select">
+                                <option value="moovie">Moovie (Hub)</option>
+                                <option value="sugar">Sugar (vidcodin.net)</option>
+                                <option value="rasmalai">Rasmalai (sweet server)</option>
+                                <option value="cinemaos">Gulab Jamun (CinemaOS)</option>
+                                <option value="smashy">Jalebi (SmashyStream)</option>
+                                <option value="mappletv">Kaju Katli (MappleTV)</option>
+                                <option value="vidsuper">Motichoor Ladoo (Vidsuper)</option>
+                                <option value="vidking">Kheer (VidKing)</option>
+                                <option value="videasy">Barfi (VidEasy)</option>
+                                <option value="vidsrc_ru">Laddu (VidSrc.ru)</option>
+                                <option value="vidsrc_su">Peda (VidSrc.su)</option>
+                                <option value="vidsrcme">Gajar Ka Halwa (VidSrcMe)</option>
+                                <option value="multiembed">Soan Papdi (MultiEmbed)</option>
+                                <option value="vsrc">Sandesh (vsrc.su)</option>
+                                <option value="vidlink">Cham Cham (VidLink)</option>
+                                <option value="autoembed">Kulfi (AutoEmbed)</option>
+                                <option value="vidfast">Mysore Pak (VidFast)</option>
+                                <option value="movies111">Imarti (111Movies)</option>
+                                <option value="vidora">Ghevar (Vidora)</option>
+                                <option value="icecream">Icecream (Videasy)</option>
+                                <option value="cinezo">Cheesecake (Cinezo)</option>
+                                <option value="nankhatai">Nankhatai (NontonGo)</option>
+                                <option value="petha">Petha (NontonGo)</option>
+                                <option value="spoider">Spoider (screenscape.me)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid" style="margin-top: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="tmdb-quality-select">TMDB Image Quality</label>
+                            <select id="tmdb-quality-select" class="form-select">
+                                <option value="low">Low - faster, smaller poster and backdrop images</option>
+                                <option value="medium" selected>Medium - balanced image quality</option>
+                                <option value="high">High - sharpest images, heavier bandwidth</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="vps-proxy-url">VPS Proxy Base URL</label>
+                            <input id="vps-proxy-url" type="text" class="form-input" placeholder="https://hahaevilcraft.site (leave empty for default)">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 1.5rem;">
+                        <label class="form-label">Groq AI API Keys</label>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <input id="groq-key-1" type="password" class="form-input" placeholder="Groq Key 1 (gsk_...)">
+                            <input id="groq-key-2" type="password" class="form-input" placeholder="Groq Key 2 (optional)">
+                            <input id="groq-key-3" type="password" class="form-input" placeholder="Groq Key 3 (optional)">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 1.5rem; border-top: 1px solid var(--rule); padding-top: 1.5rem;">
+                        <label class="form-label">Default Server Overrides by TMDB ID</label>
+                        <div id="overrides-list-container" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
+                            <p class="subtitle" style="font-size: 0.75rem; margin-bottom: 0;">No overrides configured. Specific servers are selected automatically.</p>
+                        </div>
+
+                        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                            <select id="new-override-type" class="form-select" style="flex: 1; min-width: 120px;">
+                                <option value="movie">Movie</option>
+                                <option value="tv">Show (TV)</option>
+                            </select>
+                            <input id="new-override-id" type="text" class="form-input" style="flex: 2; min-width: 160px;" placeholder="TMDB ID (e.g. 503)">
+                            <select id="new-override-server" class="form-select" style="flex: 2; min-width: 160px;">
+                                <option value="Sugar">Sugar</option>
+                                <option value="Poseidon">Poseidon</option>
+                                <option value="Thor">Thor</option>
+                                <option value="Athena">Athena</option>
+                                <option value="Zeus">Zeus</option>
+                                <option value="Hades">Hades</option>
+                            </select>
+                            <button type="button" class="btn btn-sm" onclick="addOverride()" style="width: auto;">Add</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn" id="save-settings-btn" style="margin-top: 1.5rem;">
+                        <span>Save General Settings</span>
+                    </button>
+                </form>
+
+                <div class="curation-section" style="margin-top: 2rem;">
+                    <h2 class="section-title">Send Notification</h2>
+                    <form onsubmit="handleSendNotification(event)">
+                        <div class="form-group">
+                            <label class="form-label" for="notif-title">Title</label>
+                            <input type="text" id="notif-title" class="form-input" placeholder="Notification title" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="notif-message">Message (optional)</label>
+                            <textarea id="notif-message" class="form-input" placeholder="Notification message" rows="2" style="resize: vertical; font-family: inherit;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="notif-type">Type</label>
+                            <select id="notif-type" class="form-select">
+                                <option value="info">Info</option>
+                                <option value="success">Success</option>
+                                <option value="warning">Warning</option>
+                                <option value="error">Error</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn" id="notif-btn"><span>Send to All Users</span></button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TAB 2: MODERATION & WORD FILTER -->
+            <div class="tab-page" id="tab-page-moderation">
+                <div class="form-grid">
+                    <div class="curation-section" style="margin:0;">
+                        <h2 class="section-title">Automated Word Filter</h2>
+                        <p style="color:var(--bone-300);font-size:0.85rem;margin-bottom:1rem">
+                            Comments containing any of these words will be <strong>automatically blocked</strong> on posting with <em>"[Comment removed due to inappropriate content]"</em>.
+                        </p>
+
+                        <form onsubmit="handleSaveBannedWords(event)">
+                            <div class="form-group">
+                                <label class="form-label" for="banned-words-input">Banned Words & Phrases (one per line)</label>
+                                <textarea id="banned-words-input" class="form-input" placeholder="vulgarword1&#10;inappropriate_phrase&#10;spam_link" rows="7" style="resize: vertical; font-family: inherit;"></textarea>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button type="submit" class="btn" id="save-banned-words-btn" style="width: auto;">
+                                    <span>Save Banned Words Filter</span>
+                                </button>
+                                <button type="button" class="btn" onclick="handleLoadPresetBannedWordsHtml()" style="width: auto; background: rgba(245,239,228,0.08); color: var(--bone-100);">
+                                    <span>⚡ Load Preset Profanity Filter</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="curation-section" style="margin:0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h2 class="section-title" style="margin:0;">Comment Moderation Panel</h2>
+                            <button type="button" class="btn btn-sm" onclick="loadHtmlModerationComments()" style="width: auto;">🔄 Refresh Comments</button>
+                        </div>
+
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                            <input id="mod-search-html" type="text" class="form-input" placeholder="Search by username or comment text..." oninput="renderHtmlModerationComments()" style="flex: 1; min-width: 180px;">
+                            <select id="mod-filter-html" class="form-select" onchange="renderHtmlModerationComments()" style="width: 180px;">
+                                <option value="all">All Comments</option>
+                                <option value="flagged">🚩 Flagged / Blocked</option>
+                                <option value="visible">✅ Visible</option>
+                            </select>
+                        </div>
+
+                        <div id="html-mod-comments-list" style="max-height: 480px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: 4K CURATION -->
+            <div class="tab-page" id="tab-page-curation">
+                <div class="curation-section" style="margin:0;">
+                    <h2 class="section-title">
+                        <span>4K Movies Curation</span>
+                        <span id="curation-count">0 items</span>
+                    </h2>
+                    <p class="subtitle" style="margin-bottom: 1rem;">Search and pin movies to the curated 4K UHD section on Home page.</p>
+
+                    <div class="search-container">
+                        <input type="text" id="curation-search-input" class="form-input" placeholder="Search TMDB movies to add..." style="flex: 1;" onkeypress="if(event.key==='Enter'){event.preventDefault();search4KMovies();}">
+                        <button type="button" class="btn btn-sm" onclick="search4KMovies()" style="width: auto;">Search TMDB</button>
+                    </div>
+
+                    <ul id="search-results-list" class="search-results" style="display: none;"></ul>
+
+                    <h3 style="font-family: var(--font-display); font-size: 1.1rem; color: var(--bone-200); margin-bottom: 0.75rem;">Curated 4K UHD Movies</h3>
+                    <ul id="curation-list" class="curation-list">
+                        <li class="curation-item"><span class="subtitle" style="margin:0;">Loading curated list...</span></li>
+                    </ul>
+
+                    <button type="button" class="btn" id="save-curation-btn" onclick="save4KCuration()"><span>Save 4K List</span></button>
+                </div>
+            </div>
+
+            <!-- TAB 4: POLLS -->
+            <div class="tab-page" id="tab-page-polls">
+                <div class="curation-section" style="margin:0;">
+                    <h2 class="section-title">Create New Poll</h2>
+                    <form onsubmit="handleCreatePoll(event)">
+                        <div class="form-group">
+                            <label class="form-label" for="poll-question">Question</label>
+                            <input type="text" id="poll-question" class="form-input" placeholder="Should we put ads on the site?" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="poll-options">Options (one per line)</label>
+                            <textarea id="poll-options" class="form-input" placeholder="Yes&#10;No&#10;Maybe" rows="3" style="resize: vertical; font-family: inherit;" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="display:flex;align-items:center;gap:0.5rem;text-transform:none;font-weight:400">
+                                <input type="checkbox" id="poll-active" style="margin:0;">
+                                Activate immediately (auto-deactivates older active polls)
+                            </label>
+                        </div>
+                        <button type="submit" class="btn" id="poll-create-btn" style="width:auto;"><span>Create Poll</span></button>
+                    </form>
+
+                    <h3 style="font-family: var(--font-display); font-size: 1.25rem; color: #c7bfb0; margin-top: 2rem; margin-bottom: 1rem;">Existing Polls &amp; Results</h3>
+                    <div id="existing-polls"></div>
+                </div>
+            </div>
+
+            <!-- TAB 5: SUGGESTIONS & ENGAGEMENT -->
+            <div class="tab-page" id="tab-page-suggestions">
+                <div class="curation-section" style="margin:0;">
+                    <h2 class="section-title">Suggestions & Engagement</h2>
+                    <p style="color:#a79f8d;font-size:0.85rem;margin-bottom:1rem">Create prompts to collect feedback from users. Only one suggestion can be active at a time.</p>
+
+                    <form onsubmit="handleCreateSuggestion(event)">
+                        <div class="form-group">
+                            <label class="form-label" for="suggestion-prompt">Prompt Question</label>
+                            <input id="suggestion-prompt" type="text" class="form-input" placeholder="What feature would you like to see next?" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="suggestion-placeholder">Placeholder Text</label>
+                            <input id="suggestion-placeholder" type="text" class="form-input" placeholder="e.g., Describe the feature you'd like...">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="suggestion-maxlength">Max Length (characters)</label>
+                            <input id="suggestion-maxlength" type="number" class="form-input" min="50" max="1000" value="500">
+                        </div>
+
+                        <div class="form-group">
+                            <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;text-transform:none;font-weight:400">
+                                <input id="suggestion-active" type="checkbox" style="margin:0;width:auto">
+                                Activate immediately (auto-deactivates other active suggestions)
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn" id="create-suggestion-btn" style="width:auto;"><span>Create Suggestion</span></button>
+                    </form>
+
+                    <h3 style="font-family: var(--font-display); font-size: 1.15rem; color: #c7bfb0; margin-top: 2rem; margin-bottom: 1rem;">Existing Suggestions & Responses</h3>
+                    <div id="existing-suggestions"></div>
+                </div>
+            </div>
+
+            <!-- TAB 6: DONATIONS TRACKER -->
+            <div class="tab-page" id="tab-page-donations">
+                <div class="curation-section" style="margin:0;">
+                    <h2 class="section-title">Donations Tracker</h2>
+
+                    <div class="balance-card">
+                        <h3 style="font-family: var(--font-display); font-size: 1rem; color: #c7bfb0; margin-bottom: 0.75rem;">Live Wallet Balance</h3>
+                        <div id="balance-loading" class="empty-state">Checking wallets...</div>
+                        <div id="balance-content" style="display:none">
+                            <div class="balance-row"><span>BTC</span><span id="btc-usd">$0.00</span></div>
+                            <div class="balance-row"><span>LTC</span><span id="ltc-usd">$0.00</span></div>
+                            <div class="balance-row"><span>USDT (TRC20)</span><span id="usdt-usd">$0.00</span></div>
+                            <div class="balance-row balance-row--total"><span>Total</span><span id="total-usd">$0.00</span></div>
+                        </div>
+                        <button type="button" class="btn btn--sm" id="refresh-balance-btn" onclick="refreshCryptoBalance()" style="margin-top:1rem;">Refresh Balance</button>
+                    </div>
+
+                    <form onsubmit="handleSaveDonations(event)">
+                        <div class="form-group">
+                            <label class="form-label" for="donation-raised">Manual Override Amount ($)</label>
+                            <input id="donation-raised" type="number" class="form-input" min="0" step="0.01" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="display:flex;align-items:center;gap:0.5rem;font-weight:400;font-size:0.9rem;text-transform:none">
+                                <input id="donation-popup-enabled" type="checkbox" checked style="margin:0;width:auto">
+                                Show donation popup on first visit
+                            </label>
+                        </div>
+                        <button type="submit" class="btn" id="donation-save-btn" style="width:auto;"><span>Save Donation Settings</span></button>
+                    </form>
+
+                    <button type="button" class="btn btn--donation" id="donation-notif-btn" onclick="handleDonationNotif()" style="margin-top:1rem; width:auto;">
+                        ❤️ Notify everyone — donation received!
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 6: ADS & PROXY -->
+            <div class="tab-page" id="tab-page-ads">
+                <div class="curation-section" style="margin:0;">
+                    <h2 class="section-title">Ad Management & Stream Proxy</h2>
+                    
+                    <div style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom: 2rem;">
+                        <div class="ad-row">
+                            <div class="ad-row__label"><span>🖥️</span> PC / Desktop Ads</div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="ads-pc-toggle" onchange="saveAdSettings()">
+                                <span class="toggle-slider"><span class="toggle-knob"></span></span>
+                                <span class="toggle-status" id="ads-pc-status">Disabled</span>
+                            </label>
+                        </div>
+
+                        <div class="ad-row">
+                            <div class="ad-row__label"><span>📱</span> Mobile Ads</div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="ads-mobile-toggle" onchange="saveAdSettings()">
+                                <span class="toggle-slider"><span class="toggle-knob"></span></span>
+                                <span class="toggle-status" id="ads-mobile-status">Disabled</span>
+                            </label>
+                        </div>
+
+                        <div class="ad-row">
+                            <div class="ad-row__label"><span>🙈</span> Hide Support Button</div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="support-btn-toggle" onchange="saveAdSettings()">
+                                <span class="toggle-slider"><span class="toggle-knob"></span></span>
+                                <span class="toggle-status" id="support-btn-status">Visible</span>
+                            </label>
+                        </div>
+
+                        <div class="ad-row">
+                            <div class="ad-row__label"><span>🔄</span> Stream Proxy (VPS)</div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="stream-proxy-toggle" onchange="saveStreamProxySetting()">
+                                <span class="toggle-slider"><span class="toggle-knob"></span></span>
+                                <span class="toggle-status" id="stream-proxy-status">Enabled</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <h3 style="font-family: var(--font-display); font-size: 1.15rem; color: #c7bfb0; margin-bottom: 1rem;">API Keys Configuration</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Wyzie API Keys</label>
+                            <div id="wyzie-keys-container" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+                            <button type="button" class="btn btn-sm" onclick="saveWyzieApiKeys()" style="margin-top:0.5rem; width:auto;">Save Wyzie Keys</button>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">YouTube API Keys</label>
+                            <div id="youtube-keys-container" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+                            <button type="button" class="btn btn-sm" onclick="saveYoutubeApiKeys()" style="margin-top:0.5rem; width:auto;">Save YouTube Keys</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 7: SERVER ORDER & CACHE -->
+            <div class="tab-page" id="tab-page-serverorder">
+                    <div class="curation-section" style="margin:0;">
+                        <h2 class="section-title">Server Order, Providers & Global Cache</h2>
+                        <p style="color: #a79f8d; font-size: 0.85rem; margin-bottom: 1rem;">Rearrange server priorities globally for all visitors.</p>
+
+                        <div id="server-reorder-list"></div>
+                        <button type="button" class="btn" id="save-order-btn" onclick="handleSaveOrder()" style="margin-top:1rem; width:auto;">
+                            <span>Save Server Order</span>
+                        </button>
+
+                        <div class="provider-panels">
+                            <div class="provider-panel">
+                                <div class="provider-panel__head">
+                                    <div>
+                                        <h3 class="provider-panel__title">Starred Providers</h3>
+                                        <p class="provider-panel__sub">These are the default Moovie sources used by the player.</p>
+                                    </div>
+                                    <button type="button" class="btn btn-sm" onclick="loadHubProviders()" style="width:auto;">Refresh</button>
+                                </div>
+                                <div id="starred-provider-list" class="provider-manager"></div>
+                            </div>
+
+                            <div class="provider-panel">
+                                <div class="provider-panel__head">
+                                    <div>
+                                        <h3 class="provider-panel__title">All Providers</h3>
+                                        <p class="provider-panel__sub">Enable, star, proxy, edit, or delete providers here.</p>
+                                    </div>
+                                </div>
+                                <div id="provider-manager-list" class="provider-manager"></div>
+                            </div>
+                        </div>
+
+                        <div class="server-grid" style="margin-top: 2rem;">
+                        <div class="server-grid-item"><strong>ID</strong><strong>Sweet Name</strong></div>
+                        <div class="server-grid-item"><span>moovie</span><span>Moovie</span></div>
+                        <div class="server-grid-item"><span>rasmalai</span><span>Rasmalai</span></div>
+                        <div class="server-grid-item"><span>cinemaos</span><span>Gulab Jamun</span></div>
+                        <div class="server-grid-item"><span>smashy</span><span>Jalebi</span></div>
+                        <div class="server-grid-item"><span>mappletv</span><span>Kaju Katli</span></div>
+                        <div class="server-grid-item"><span>vidsuper</span><span>Motichoor Ladoo</span></div>
+                        <div class="server-grid-item"><span>vidking</span><span>Kheer</span></div>
+                        <div class="server-grid-item"><span>videasy</span><span>Barfi</span></div>
+                        <div class="server-grid-item"><span>vidsrc_ru</span><span>Laddu</span></div>
+                        <div class="server-grid-item"><span>vidsrc_su</span><span>Peda</span></div>
+                        <div class="server-grid-item"><span>vidsrcme</span><span>Gajar Ka Halwa</span></div>
+                        <div class="server-grid-item"><span>multiembed</span><span>Soan Papdi</span></div>
+                        <div class="server-grid-item"><span>vsrc</span><span>Sandesh</span></div>
+                        <div class="server-grid-item"><span>vidlink</span><span>Cham Cham</span></div>
+                        <div class="server-grid-item"><span>autoembed</span><span>Kulfi</span></div>
+                        <div class="server-grid-item"><span>vidfast</span><span>Mysore Pak</span></div>
+                        <div class="server-grid-item"><span>movies111</span><span>Imarti</span></div>
+                        <div class="server-grid-item"><span>vidora</span><span>Ghevar</span></div>
+                        <div class="server-grid-item"><span>icecream</span><span>Icecream</span></div>
+                        <div class="server-grid-item"><span>cinezo</span><span>Cheesecake</span></div>
+                        <div class="server-grid-item"><span>nankhatai</span><span>Nankhatai</span></div>
+                        <div class="server-grid-item"><span>petha</span><span>Petha</span></div>
+                        <div class="server-grid-item"><span>spoider</span><span>Spoider</span></div>
+                    </div>
+
+                    <div class="cache-card">
+                        <div class="cache-info">
+                            <span class="cache-icon">🧊</span>
+                            <div>
+                                <strong class="cache-title">Clear TMDB Poster Cache</strong>
+                                <p class="subtitle" style="font-size: 0.75rem; margin-top: 0.25rem; color: var(--bone-300);">Nukes the poster and trending list cache globally for all users instantly.</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-danger" id="clear-cache-btn" onclick="handleClearTmdbCache(event)">
+                            <span>🗑️ Clear Cache Now</span>
+                        </button>
+                    </div>
+
+                    <div class="cache-card">
+                        <div class="cache-info">
+                            <span class="cache-icon">🖥️</span>
+                            <div>
+                                <strong class="cache-title">Clear VPS TMDB Image Cache</strong>
+                                <p class="subtitle" style="font-size: 0.75rem; margin-top: 0.25rem; color: var(--bone-300);">Deletes the cached TMDB poster images on your VPS.</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-danger" id="clear-vps-cache-btn" onclick="handleClearVpsCache(event)">
+                            <span>🗑️ Clear VPS Image Cache</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </div>
+
+    <div id="provider-editor-modal" class="provider-editor-modal" aria-hidden="true">
+        <div class="provider-editor-card">
+            <div class="provider-editor-head">
+                <div>
+                    <h3 class="provider-panel__title" id="provider-editor-title">Edit Provider File</h3>
+                    <p class="provider-panel__sub" id="provider-editor-path">No file loaded</p>
+                </div>
+                <button type="button" class="provider-action-btn" onclick="closeProviderEditor()">Close</button>
+            </div>
+            <div class="provider-editor-body">
+                <div class="provider-editor-meta">
+                    <div class="meta-card">
+                        <strong>Provider ID</strong>
+                        <div id="provider-editor-id" style="margin-top:0.35rem;"></div>
+                    </div>
+                    <div class="meta-card">
+                        <strong>Proxy Mode</strong>
+                        <div id="provider-editor-proxy" style="margin-top:0.35rem;"></div>
+                    </div>
+                    <div class="meta-card">
+                        <strong>Controls</strong>
+                        <div style="margin-top:0.35rem;">Use this panel to edit the provider file, toggle proxy behavior, or remove the source entirely.</div>
+                    </div>
+                </div>
+                <div class="provider-editor-content">
+                    <textarea id="provider-editor-text" class="form-input provider-editor-textarea" spellcheck="false"></textarea>
+                </div>
+            </div>
+            <div class="provider-editor-actions">
+                <button type="button" class="provider-action-btn provider-action-btn--danger" onclick="deleteCurrentProviderFile()">Delete Provider File</button>
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <button type="button" class="provider-action-btn" onclick="reloadCurrentProviderFile()">Reload</button>
+                    <button type="button" class="btn" onclick="saveCurrentProviderFile()" style="width:auto;">Save File</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Alert Container -->
+    <div id="toast" class="toast"></div>
+
+<script>
+
+        // ==========================================
+        // TAB NAVIGATION SWITCHER
+        // ==========================================
+        function switchHtmlTab(tabId) {
+            document.querySelectorAll('.tab-page').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            const targetPage = document.getElementById('tab-page-' + tabId);
+            const targetBtn = document.getElementById('tab-btn-' + tabId);
+            if (targetPage) targetPage.classList.add('active');
+            if (targetBtn) targetBtn.classList.add('active');
+
+            if (tabId === 'moderation') loadHtmlModerationComments();
+            if (tabId === 'donations') refreshCryptoBalance();
+            if (tabId === 'polls') loadExistingPolls();
+            if (tabId === 'suggestions') loadExistingSuggestions();
+            if (tabId === 'serverorder') loadServerOrder();
+        }
+
+        let syncClient;
+        let adminPasscode = 'admin123'; // fallback default passcode
+        let serverOverrides = {};
+
+        // Initialize Sync Client (self-hosted VPS backend from /party/party-sync.js)
+        function initSyncClient() {
+            syncClient = moovieSync.createClient();
+        }
+
+        // Show toast alert
+        function showToast(message, isSuccess = true) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast show ${isSuccess ? 'toast-success' : 'toast-error'}`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Authenticate passcode
+        async function handleAuthenticate(event) {
+            event.preventDefault();
+            const btn = document.getElementById('auth-btn');
+            const passcodeField = document.getElementById('admin-passcode-input');
+            const enteredPasscode = passcodeField.value.trim();
+            
+            btn.disabled = true;
+            btn.textContent = 'Verifying...';
+
+            try {
+                // Fetch passcode from the sync backend
+                const { data, error } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'admin_passcode')
+                    .single();
+                
+                if (data && data.value) {
+                    adminPasscode = data.value;
+                }
+
+                if (enteredPasscode === adminPasscode) {
+                    showToast('Access Granted!');
+                    document.getElementById('auth-view').classList.remove('active');
+                    document.getElementById('dashboard-view').classList.add('active');
+                    loadDashboardSettings();
+                } else {
+                    showToast('Invalid passcode', false);
+                }
+            } catch (err) {
+                console.error(err);
+                // Try fallback passcode if DB table does not exist or has RLS error
+                if (enteredPasscode === 'admin123') {
+                    showToast('Unlocked (using offline fallback)');
+                    document.getElementById('auth-view').classList.remove('active');
+                    document.getElementById('dashboard-view').classList.add('active');
+                    loadDashboardSettings();
+                } else {
+                    showToast('Auth error. Make sure migrations are run.', false);
+                }
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Unlock Dashboard';
+            }
+        }
+
+        // Render overrides list
+        function renderOverridesList() {
+            const container = document.getElementById('overrides-list-container');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            const keys = Object.keys(serverOverrides || {});
+            if (keys.length === 0) {
+                container.innerHTML = `<p class="subtitle" style="font-size: 0.75rem; margin-bottom: 0;">No overrides configured. Specific servers are selected automatically.</p>`;
+                return;
+            }
+
+            keys.forEach(key => {
+                const parts = key.split('-');
+                const type = parts[0];
+                const id = parts[1];
+                const serverName = serverOverrides[key];
+                
+                const div = document.createElement('div');
+                div.style.display = 'flex';
+                div.style.justify = 'space-between';
+                div.style.alignItems = 'center';
+                div.style.background = 'rgba(255,255,255,0.05)';
+                div.style.padding = '0.5rem 1rem';
+                div.style.borderRadius = '4px';
+                
+                div.innerHTML = `
+                    <span>
+                        <strong style="text-transform: uppercase; color: var(--ember);">${type}</strong> 
+                        ID: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">${id}</code> 
+                        ➔ <strong style="color: #4eb5ff;">${serverName}</strong>
+                    </span>
+                    <button 
+                        type="button" 
+                        class="btn btn-sm btn-danger" 
+                        style="margin: 0; width: auto; font-size: 0.75rem; padding: 0.3rem 0.6rem;"
+                        onclick="deleteOverride('${key}')"
+                    >
+                        Delete
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Add override
+        function addOverride() {
+            const type = document.getElementById('new-override-type').value;
+            const idInput = document.getElementById('new-override-id');
+            const idVal = idInput.value.trim();
+            const serverName = document.getElementById('new-override-server').value;
+            
+            if (!idVal) {
+                showToast('Please enter a valid TMDB ID', false);
+                return;
+            }
+            
+            const key = `${type}-${idVal}`;
+            serverOverrides[key] = serverName;
+            idInput.value = '';
+            
+            renderOverridesList();
+            showToast(`Added override for ${key}`);
+        }
+
+        // Delete override
+        function deleteOverride(key) {
+            delete serverOverrides[key];
+            renderOverridesList();
+            showToast(`Removed override for ${key}`);
+        }
+
+        // Load settings onto dashboard
+        async function loadDashboardSettings() {
+            try {
+                const { data: defaultProviderData } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'default_provider')
+                    .single();
+                
+                if (defaultProviderData && defaultProviderData.value) {
+                    document.getElementById('default-provider-select').value = defaultProviderData.value.toLowerCase();
+                }
+
+                const { data: mobileProviderData } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'default_provider_mobile')
+                    .single();
+                
+                if (mobileProviderData && mobileProviderData.value) {
+                    document.getElementById('default-provider-mobile-select').value = mobileProviderData.value.toLowerCase();
+                }
+            } catch (err) {
+                console.warn('Could not retrieve current default provider:', err);
+            }
+
+            try {
+                const { data } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'tmdb_image_quality')
+                    .single();
+                if (data && data.value) {
+                    document.getElementById('tmdb-quality-select').value = data.value;
+                }
+            } catch (err) {
+                console.warn('Could not retrieve current TMDB image quality:', err);
+            }
+
+            try {
+                const { data } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'vps_proxy_base_url')
+                    .single();
+                if (data && data.value) {
+                    document.getElementById('vps-proxy-url').value = data.value;
+                }
+            } catch (err) {
+                console.warn('Could not retrieve VPS proxy URL:', err);
+            }
+
+            try {
+                const { data } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'groq_keys')
+                    .single();
+                if (data && data.value) {
+                    const keys = JSON.parse(data.value);
+                    if (Array.isArray(keys)) {
+                        if (keys[0]) document.getElementById('groq-key-1').value = keys[0];
+                        if (keys[1]) document.getElementById('groq-key-2').value = keys[1];
+                        if (keys[2]) document.getElementById('groq-key-3').value = keys[2];
+                    }
+                }
+            } catch (err) {
+                console.warn('Could not retrieve current Groq keys:', err);
+            }
+
+            try {
+                const { data } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'default_server_overrides')
+                    .single();
+                if (data && data.value) {
+                    serverOverrides = JSON.parse(data.value) || {};
+                } else {
+                    serverOverrides = {};
+                }
+                renderOverridesList();
+            } catch (err) {
+                console.warn('Could not retrieve current default server overrides:', err);
+                serverOverrides = {};
+                renderOverridesList();
+            }
+            
+            // Load 4K curation
+            await load4KCuration();
+            
+            // Load banner & polls
+            loadBannerSettings();
+            loadExistingPolls();
+            
+            // Load donation settings & balance
+            refreshCryptoBalance();
+            loadDonationSettings();
+
+            // Load ad settings
+            loadAdSettings();
+
+            // Load stream proxy setting
+            loadStreamProxySetting();
+
+            // Load Wyzie API keys
+            loadWyzieApiKeys();
+
+            // Load YouTube API keys
+            loadYoutubeApiKeys();
+
+            // Load OpenSubtitles API keys
+            loadOsApiKeys();
+
+            // Load server order
+            loadServerOrder();
+
+            // Load Moderation & Banned Words
+            loadHtmlBannedWords();
+            loadHtmlModerationComments();
+        }
+
+        // ==========================================
+        // MODERATION LOGIC
+        // ==========================================
+        let htmlModComments = [];
+        const DEFAULT_PRESET_BANNED_WORDS = [
+            'fuck', 'shit', 'bitch', 'asshole', 'bastard', 'cunt', 'dick', 'pussy',
+            'slut', 'whore', 'nigger', 'faggot', 'retard', 'scam', 'spam', 'telegram', 'whatsapp'
+        ];
+
+        async function loadHtmlBannedWords() {
+            try {
+                const { data } = await syncClient.from('app_settings').select('value').eq('key', 'banned_words').maybeSingle();
+                if (data && data.value) {
+                    try {
+                        const arr = JSON.parse(data.value);
+                        if (Array.isArray(arr)) document.getElementById('banned-words-input').value = arr.join('\n');
+                    } catch (e) {
+                        document.getElementById('banned-words-input').value = String(data.value);
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load banned words:', e);
+            }
+        }
+
+        async function handleSaveBannedWords(e) {
+            e.preventDefault();
+            const btn = document.getElementById('save-banned-words-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span>Saving...</span>';
+
+            const rawText = document.getElementById('banned-words-input').value || '';
+            const wordList = Array.from(new Set(
+                rawText.split('\n').map(w => w.trim().toLowerCase()).filter(Boolean)
+            ));
+
+            try {
+                await syncClient.from('app_settings').upsert({
+                    key: 'banned_words',
+                    value: JSON.stringify(wordList),
+                    updated_at: new Date().toISOString()
+                });
+                showToast(`Saved ${wordList.length} banned words!`);
+            } catch (err) {
+                showToast('Failed to save banned words', false);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Save Banned Words Filter</span>';
+            }
+        }
+
+        function handleLoadPresetBannedWordsHtml() {
+            const el = document.getElementById('banned-words-input');
+            const existing = (el.value || '').split('\n').map(w => w.trim().toLowerCase()).filter(Boolean);
+            const combined = Array.from(new Set([...existing, ...DEFAULT_PRESET_BANNED_WORDS]));
+            el.value = combined.join('\n');
+            showToast('Loaded preset inappropriate word list!');
+        }
+
+        async function loadHtmlModerationComments() {
+            const container = document.getElementById('html-mod-comments-list');
+            if (!container) return;
+            container.innerHTML = '<div class="empty-state">Loading comments...</div>';
+            try {
+                const { data } = await syncClient
+                    .from('movora_comments')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(1000);
+                htmlModComments = data || [];
+                renderHtmlModerationComments();
+            } catch (e) {
+                container.innerHTML = '<div class="empty-state">Failed to load comments</div>';
+            }
+        }
+
+        function renderHtmlModerationComments() {
+            const container = document.getElementById('html-mod-comments-list');
+            if (!container) return;
+            const filterEl = document.getElementById('mod-filter-html');
+            const searchEl = document.getElementById('mod-search-html');
+            const filter = filterEl ? filterEl.value : 'all';
+            const query = searchEl ? (searchEl.value || '').toLowerCase().trim() : '';
+
+            let list = htmlModComments;
+            if (filter === 'flagged') {
+                list = list.filter(c => c.is_hidden === 1 || c.is_hidden === true);
+            } else if (filter === 'visible') {
+                list = list.filter(c => !c.is_hidden);
+            }
+
+            if (query) {
+                list = list.filter(c => 
+                    (c.username || '').toLowerCase().includes(query) ||
+                    (c.content || '').toLowerCase().includes(query)
+                );
+            }
+
+            const blockedCount = htmlModComments.filter(c => c.is_hidden === 1 || c.is_hidden === true).length;
+            const totalCount = htmlModComments.length;
+
+            if (list.length === 0) {
+                container.innerHTML = `<div style="font-size:0.8rem;color:var(--bone-300);margin-bottom:0.75rem;">Total: <strong>${totalCount}</strong> comments &nbsp;|&nbsp; 🚫 Blocked: <strong>${blockedCount}</strong></div><div class="empty-state">No comments match the filter</div>`;
+                return;
+            }
+            const summaryHtml = `<div style="font-size:0.8rem;color:var(--bone-300);margin-bottom:0.75rem;">Showing <strong>${list.length}</strong> of <strong>${totalCount}</strong> comments &nbsp;|&nbsp; 🚫 Blocked: <strong>${blockedCount}</strong></div>`;
+
+            container.innerHTML = summaryHtml + list.map(c => `
+                <div style="background: rgba(245,239,228,0.02); border: 1px solid ${c.is_hidden ? 'rgba(201,78,61,0.3)' : 'var(--rule)'}; border-radius: var(--r-md); padding: 0.85rem 1rem; margin-bottom: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--bone-300); margin-bottom: 0.4rem;">
+                        <span>👤 <strong>${c.username || 'Anonymous'}</strong> (${c.media_type || 'lounge'})</span>
+                        <span style="font-weight: 700; color: ${c.is_hidden ? '#c94e3d' : '#6ba368'}">${c.is_hidden ? '🚫 BLOCKED' : '✅ VISIBLE'}</span>
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--bone-100); margin-bottom: 0.6rem;">
+                        ${c.is_hidden ? `<em style="color:#c94e3d">Original Content:</em> ${c.content} <br><small style="color:#a79f8d">(Publicly shown as: "[Comment removed due to inappropriate content]")</small>` : c.content}
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" class="btn btn-sm" style="width:auto; background:${c.is_hidden ? 'rgba(107,163,104,0.2)' : 'rgba(216,162,75,0.2)'}; color:${c.is_hidden ? '#88d484' : '#e5b364'}" onclick="toggleHtmlCommentHide('${c.id}', ${c.is_hidden ? 0 : 1})">
+                            ${c.is_hidden ? '✅ Restore Comment' : '🚫 Block Comment'}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-danger" style="width:auto" onclick="deleteHtmlComment('${c.id}')">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function toggleHtmlCommentHide(id, newHidden) {
+            try {
+                await syncClient.from('movora_comments').update({ is_hidden: newHidden }).eq('id', id);
+                const c = htmlModComments.find(x => String(x.id) === String(id));
+                if (c) c.is_hidden = newHidden;
+                renderHtmlModerationComments();
+                showToast(newHidden ? 'Comment blocked / hidden!' : 'Comment restored!');
+            } catch (e) {
+                showToast('Failed to update comment status', false);
+            }
+        }
+
+        async function deleteHtmlComment(id) {
+            if (!confirm('Permanently delete this comment?')) return;
+            try {
+                await syncClient.from('movora_comments').delete().eq('id', id);
+                htmlModComments = htmlModComments.filter(x => String(x.id) !== String(id));
+                renderHtmlModerationComments();
+                showToast('Comment permanently deleted!');
+            } catch (e) {
+                showToast('Failed to delete comment', false);
+            }
+        }
+
+        // ==========================================
+        // SERVER ORDER LOGIC
+        // ==========================================
+        let serverOrderIds = [];
+        let hubProviders = {};
+        let providerEditorState = {
+            id: '',
+            filePath: '',
+            content: '',
+            proxyMode: 'inherit',
+        };
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[ch]));
+        }
+
+        const serverIdToName = {
+            moovie: 'Moovie', sugar: 'Sugar', rasmalai: 'Rasmalai', cinemaos: 'Gulab Jamun', smashy: 'Jalebi',
+            mappletv: 'Kaju Katli', vidking: 'Kheer', videasy: 'Barfi',
+            vidsrc_ru: 'Laddu', vidsrc_su: 'Peda', vidsrcme: 'Gajar Ka Halwa',
+            multiembed: 'Soan Papdi', vsrc: 'Sandesh', vidlink: 'Cham Cham',
+            autoembed: 'Kulfi', vidfast: 'Mysore Pak', movies111: 'Imarti',
+            vidora: 'Ghevar', vidsuper: 'Motichoor Ladoo', icecream: 'Icecream',
+            cinezo: 'Cheesecake', nankhatai: 'Nankhatai', petha: 'Petha', spoider: 'Spoider'
+        };
+        const defaultServerIds = Object.keys(serverIdToName);
+
+        async function loadServerOrder() {
+            await loadHubProviders();
+            try {
+                const { data } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'server_order')
+                    .maybeSingle();
+                if (data && data.value) {
+                    const parsed = typeof data.value === 'string' ? JSON.parse(data.value) : data.value;
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        serverOrderIds = parsed;
+                        const existing = new Set(parsed.map(x => String(x).toLowerCase()));
+                        defaultServerIds.forEach(id => {
+                            if (!existing.has(id.toLowerCase())) {
+                                serverOrderIds.push(id);
+                            }
+                        });
+                        renderReorderList();
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not load server order:', e);
+            }
+            serverOrderIds = [...defaultServerIds];
+            renderReorderList();
+        }
+
+        async function loadHubProviders() {
+            const container = document.getElementById('provider-manager-list');
+            const starredContainer = document.getElementById('starred-provider-list');
+            if (container) {
+                container.innerHTML = '<p class="subtitle" style="font-size:0.8rem;">Loading providers...</p>';
+            }
+            if (starredContainer) {
+                starredContainer.innerHTML = '<p class="subtitle" style="font-size:0.8rem;">Loading providers...</p>';
+            }
+            try {
+                const res = await fetch('/providers', { cache: 'no-store' });
+                if (!res.ok) throw new Error(`Provider request failed (${res.status})`);
+                hubProviders = await res.json();
+                renderProviderPanels();
+            } catch (e) {
+                console.warn('Could not load hub providers:', e);
+                if (container) {
+                    container.innerHTML = '<p class="subtitle" style="font-size:0.8rem;color:var(--danger);">Provider hub is not reachable from this admin page.</p>';
+                }
+                if (starredContainer) {
+                    starredContainer.innerHTML = '<p class="subtitle" style="font-size:0.8rem;color:var(--danger);">Provider hub is not reachable from this admin page.</p>';
+                }
+            }
+        }
+
+        function moveReorderItem(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= serverOrderIds.length) return;
+            const item = serverOrderIds.splice(index, 1)[0];
+            serverOrderIds.splice(newIndex, 0, item);
+            renderReorderList();
+        }
+
+        function renderReorderList() {
+            const container = document.getElementById('server-reorder-list');
+            container.innerHTML = '';
+            serverOrderIds.forEach((id, i) => {
+                const name = serverIdToName[id] || id;
+                const div = document.createElement('div');
+                div.className = 'reorder-item';
+                div.innerHTML = `
+                    <div class="reorder-controls">
+                        <button type="button" class="reorder-btn" ${i === 0 ? 'disabled' : ''} onclick="moveReorderItem(${i}, -1)">↑</button>
+                        <button type="button" class="reorder-btn" ${i === serverOrderIds.length - 1 ? 'disabled' : ''} onclick="moveReorderItem(${i}, 1)">↓</button>
+                    </div>
+                    <span class="reorder-idx">${i + 1}</span>
+                    <span class="reorder-name">${name}</span>
+                    <span class="reorder-id">${id}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderProviderRow(id, provider) {
+            const starred = Boolean(provider.starred);
+            const enabled = provider.enabled !== false;
+            const proxyMode = provider.proxyMode || 'inherit';
+            const canEditFile = Boolean(provider.hasFile);
+            return `
+                <div class="provider-manager-row ${starred ? 'is-starred' : ''}">
+                    <button type="button" class="provider-star-btn ${starred ? 'is-starred' : ''}" title="${starred ? 'Remove from starred providers' : 'Add to starred providers'}" onclick="toggleProviderStar(${JSON.stringify(id)}, ${starred ? 'false' : 'true'})">★</button>
+                    <button type="button" class="provider-action-btn" title="${enabled ? 'Disable provider' : 'Enable provider'}" onclick="toggleProviderEnabled(${JSON.stringify(id)}, ${enabled ? 'false' : 'true'})">${enabled ? 'Enabled' : 'Disabled'}</button>
+                    <div>
+                        <div>${escapeHtml(provider.name || id)}</div>
+                        <div class="provider-manager-id">${escapeHtml(id)}</div>
+                    </div>
+                    <select class="form-select provider-mode-select" onchange="setProviderProxyMode(${JSON.stringify(id)}, this.value)">
+                        <option value="inherit" ${proxyMode === 'inherit' ? 'selected' : ''}>Proxy: inherit</option>
+                        <option value="on" ${proxyMode === 'on' ? 'selected' : ''}>Proxy: on</option>
+                        <option value="off" ${proxyMode === 'off' ? 'selected' : ''}>Proxy: off</option>
+                    </select>
+                    <button type="button" class="provider-action-btn" ${canEditFile ? '' : 'disabled'} onclick="openProviderEditor(${JSON.stringify(id)})">Edit</button>
+                    <button type="button" class="provider-action-btn provider-action-btn--danger" ${canEditFile ? '' : 'disabled'} onclick="deleteProviderFile(${JSON.stringify(id)})">Delete</button>
+                </div>
+            `;
+        }
+
+        function renderProviderPanels() {
+            const allContainer = document.getElementById('provider-manager-list');
+            const starredContainer = document.getElementById('starred-provider-list');
+            const entries = Object.entries(hubProviders)
+                .sort((a, b) => {
+                    const starDiff = Number(Boolean(b[1].starred)) - Number(Boolean(a[1].starred));
+                    if (starDiff) return starDiff;
+                    return (a[1].priority || 999) - (b[1].priority || 999);
+                });
+            const starredEntries = entries.filter(([, provider]) => Boolean(provider.starred));
+
+            if (allContainer) {
+                if (!entries.length) {
+                    allContainer.innerHTML = '<p class="subtitle" style="font-size:0.8rem;">No providers loaded.</p>';
+                } else {
+                    allContainer.innerHTML = entries.map(([id, provider]) => renderProviderRow(id, provider)).join('');
+                }
+            }
+
+            if (starredContainer) {
+                if (!starredEntries.length) {
+                    starredContainer.innerHTML = '<p class="subtitle" style="font-size:0.8rem;">No starred providers yet. Star providers below to add them here.</p>';
+                } else {
+                    starredContainer.innerHTML = starredEntries.map(([id, provider]) => renderProviderRow(id, provider)).join('');
+                }
+            }
+        }
+
+        async function toggleProviderEnabled(id, enabled) {
+            const provider = hubProviders[id];
+            if (provider) provider.enabled = enabled;
+            renderProviderPanels();
+            try {
+                const res = await fetch(`/providers/${encodeURIComponent(id)}/toggle`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                if (!res.ok) throw new Error(`Save failed (${res.status})`);
+                const data = await res.json();
+                if (hubProviders[data.id]) hubProviders[data.id].enabled = data.enabled;
+                renderProviderPanels();
+                showToast(data.enabled ? 'Provider enabled' : 'Provider disabled');
+            } catch (e) {
+                if (provider) provider.enabled = !enabled;
+                renderProviderPanels();
+                showToast('Failed to update provider', false);
+            }
+        }
+
+        async function toggleProviderStar(id, starred) {
+            const provider = hubProviders[id];
+            if (provider) provider.starred = starred;
+            renderProviderPanels();
+            try {
+                const res = await fetch(`/providers/${encodeURIComponent(id)}/starred`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ starred })
+                });
+                if (!res.ok) throw new Error(`Save failed (${res.status})`);
+                const data = await res.json();
+                if (hubProviders[data.id]) hubProviders[data.id].starred = data.starred;
+                renderProviderPanels();
+                showToast(data.starred ? 'Provider added to starred' : 'Provider removed from starred');
+            } catch (e) {
+                if (provider) provider.starred = !starred;
+                renderProviderPanels();
+                showToast('Failed to update starred provider', false);
+            }
+        }
+
+        async function setProviderProxyMode(id, proxyMode) {
+            const provider = hubProviders[id];
+            if (provider) provider.proxyMode = proxyMode;
+            renderProviderPanels();
+            try {
+                const res = await fetch(`/providers/${encodeURIComponent(id)}/proxy-mode`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ proxyMode })
+                });
+                if (!res.ok) throw new Error(`Save failed (${res.status})`);
+                const data = await res.json();
+                if (hubProviders[data.id]) hubProviders[data.id].proxyMode = data.proxyMode;
+                renderProviderPanels();
+                showToast(`Proxy mode set to ${data.proxyMode}`);
+            } catch (e) {
+                if (provider) provider.proxyMode = provider.proxyMode || 'inherit';
+                renderProviderPanels();
+                showToast('Failed to update proxy mode', false);
+            }
+        }
+
+        async function openProviderEditor(id) {
+            try {
+                const res = await fetch(`/providers/${encodeURIComponent(id)}/file`, { cache: 'no-store' });
+                if (!res.ok) throw new Error(`File request failed (${res.status})`);
+                const data = await res.json();
+                providerEditorState = {
+                    id,
+                    filePath: data.filePath || '',
+                    content: data.content || '',
+                    proxyMode: hubProviders[id]?.proxyMode || 'inherit',
+                };
+                document.getElementById('provider-editor-title').textContent = `Edit ${hubProviders[id]?.name || id}`;
+                document.getElementById('provider-editor-path').textContent = providerEditorState.filePath || 'Unknown file path';
+                document.getElementById('provider-editor-id').textContent = id;
+                document.getElementById('provider-editor-proxy').textContent = providerEditorState.proxyMode;
+                document.getElementById('provider-editor-text').value = providerEditorState.content;
+                const modal = document.getElementById('provider-editor-modal');
+                modal.classList.add('is-open');
+                modal.setAttribute('aria-hidden', 'false');
+            } catch (e) {
+                console.warn(e);
+                showToast('Failed to open provider file', false);
+            }
+        }
+
+        function closeProviderEditor() {
+            const modal = document.getElementById('provider-editor-modal');
+            modal.classList.remove('is-open');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+
+        async function reloadCurrentProviderFile() {
+            if (!providerEditorState.id) return;
+            await openProviderEditor(providerEditorState.id);
+        }
+
+        async function saveCurrentProviderFile() {
+            const id = providerEditorState.id;
+            if (!id) return;
+            const content = document.getElementById('provider-editor-text').value;
+            try {
+                const res = await fetch(`/providers/${encodeURIComponent(id)}/file`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+                if (!res.ok) throw new Error(`Save failed (${res.status})`);
+                providerEditorState.content = content;
+                showToast('Provider file saved');
+                await loadHubProviders();
+                await openProviderEditor(id);
+            } catch (e) {
+                console.warn(e);
+                showToast('Failed to save provider file', false);
+            }
+        }
+
+        async function deleteCurrentProviderFile() {
+            if (!providerEditorState.id) return;
+            await deleteProviderFile(providerEditorState.id);
+        }
+
+        async function deleteProviderFile(id) {
+            if (!confirm(`Delete provider file for "${hubProviders[id]?.name || id}"? This removes the provider from the server.`)) return;
+            try {
+                const res = await fetch(`/providers/${encodeURIComponent(id)}/file`, { method: 'DELETE' });
+                if (!res.ok) throw new Error(`Delete failed (${res.status})`);
+                if (providerEditorState.id === id) closeProviderEditor();
+                showToast('Provider file deleted');
+                await loadHubProviders();
+                await loadServerOrder();
+            } catch (e) {
+                console.warn(e);
+                showToast('Failed to delete provider file', false);
+            }
+        }
+
+        async function handleSaveOrder() {
+            const btn = document.getElementById('save-order-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span>Saving...</span>';
+            try {
+                await syncClient
+                    .from('app_settings')
+                    .upsert({ key: 'server_order', value: JSON.stringify(serverOrderIds), updated_at: new Date() }, { onConflict: 'key' });
+                showToast('Server order updated!');
+            } catch (e) {
+                showToast('Failed to save order', false);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Save Server Order</span>';
+            }
+        }
+
+        // ==========================================
+        // 4K CURATION LOGIC
+        // ==========================================
+        let selectedMovies = [];
+
+        async function load4KCuration() {
+            try {
+                const { data, error } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', '4k_movies_today')
+                    .single();
+                
+                if (data && data.value) {
+                    selectedMovies = JSON.parse(data.value);
+                } else {
+                    selectedMovies = [];
+                }
+                renderCurationList();
+            } catch (err) {
+                console.warn('Could not load current 4K curation:', err);
+                selectedMovies = [];
+                renderCurationList();
+            }
+        }
+
+        async function handleSearch4K(event) {
+            if (event) event.preventDefault();
+            const query = document.getElementById('search-4k-input').value.trim();
+            if (!query) return;
+
+            const resultsContainer = document.getElementById('search-4k-results');
+            resultsContainer.style.display = 'block';
+            resultsContainer.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--bone-400); font-size: 0.9rem;">Searching...</div>';
+
+            try {
+                const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=dfa4c2c7c1de1005adee824dc5593672&query=${encodeURIComponent(query)}&language=en-US&page=1`);
+                const data = await res.json();
+                const results = data.results || [];
+                
+                if (results.length === 0) {
+                    resultsContainer.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--bone-400); font-size: 0.9rem;">No movies found</div>';
+                    return;
+                }
+
+                resultsContainer.innerHTML = '';
+                results.forEach(movie => {
+                    const item = document.createElement('li');
+                    item.className = 'search-item';
+                    
+                    const details = document.createElement('div');
+                    details.className = 'item-details';
+                    
+                    const title = document.createElement('div');
+                    title.className = 'item-title';
+                    title.textContent = movie.title || movie.original_title;
+                    
+                    const meta = document.createElement('div');
+                    meta.className = 'item-meta';
+                    meta.textContent = movie.release_date ? movie.release_date.split('-')[0] : 'N/A';
+                    
+                    details.appendChild(title);
+                    details.appendChild(meta);
+                    
+                    const addBtn = document.createElement('button');
+                    addBtn.type = 'button';
+                    addBtn.className = 'btn btn-sm';
+                    addBtn.textContent = isAlreadyAdded(movie.id) ? 'Added' : 'Add';
+                    addBtn.disabled = isAlreadyAdded(movie.id) || selectedMovies.length >= 10;
+                    
+                    addBtn.onclick = () => {
+                        addMovieToCuration(movie);
+                        addBtn.textContent = 'Added';
+                        addBtn.disabled = true;
+                    };
+                    
+                    item.appendChild(details);
+                    item.appendChild(addBtn);
+                    resultsContainer.appendChild(item);
+                });
+            } catch (err) {
+                console.error(err);
+                resultsContainer.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--danger); font-size: 0.9rem;">Error searching movies</div>';
+            }
+        }
+
+        function isAlreadyAdded(id) {
+            return selectedMovies.some(m => m.id === id);
+        }
+
+        function addMovieToCuration(movie) {
+            if (selectedMovies.length >= 10) return;
+            selectedMovies.push({
+                id: movie.id,
+                title: movie.title || movie.original_title,
+                originalTitle: movie.original_title,
+                posterPath: movie.poster_path,
+                rating: movie.vote_average,
+                releaseDate: movie.release_date,
+                genreIds: movie.genre_ids,
+                adult: movie.adult,
+                type: 'movie'
+            });
+            renderCurationList();
+        }
+
+        function removeMovieFromCuration(id) {
+            selectedMovies = selectedMovies.filter(m => m.id !== id);
+            renderCurationList();
+            
+            // If search results are showing, refresh search state
+            const query = document.getElementById('search-4k-input').value.trim();
+            if (query) {
+                handleSearch4K();
+            }
+        }
+
+        function moveCurationItem(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= selectedMovies.length) return;
+            const temp = selectedMovies[index];
+            selectedMovies[index] = selectedMovies[newIndex];
+            selectedMovies[newIndex] = temp;
+            renderCurationList();
+        }
+
+        function renderCurationList() {
+            const list = document.getElementById('curation-4k-list');
+            list.innerHTML = '';
+            
+            document.getElementById('curation-count').textContent = `(${selectedMovies.length}/10)`;
+
+            if (selectedMovies.length === 0) {
+                list.innerHTML = '<li style="padding: 1.5rem; text-align: center; color: var(--bone-400); font-size: 0.9rem;">No 4K movies selected yet</li>';
+                return;
+            }
+
+            selectedMovies.forEach((movie, index) => {
+                const item = document.createElement('li');
+                item.className = 'curation-item';
+                
+                const details = document.createElement('div');
+                details.className = 'item-details';
+                
+                const title = document.createElement('div');
+                title.className = 'item-title';
+                title.textContent = `${index + 1}. ${movie.title}`;
+                
+                const meta = document.createElement('div');
+                meta.className = 'item-meta';
+                meta.textContent = movie.releaseDate ? movie.releaseDate.split('-')[0] : 'N/A';
+                
+                details.appendChild(title);
+                details.appendChild(meta);
+                
+                const actions = document.createElement('div');
+                actions.className = 'curation-actions';
+                
+                const upBtn = document.createElement('button');
+                upBtn.type = 'button';
+                upBtn.className = 'action-icon-btn';
+                upBtn.textContent = '↑';
+                upBtn.disabled = index === 0;
+                upBtn.onclick = () => moveCurationItem(index, -1);
+                
+                const downBtn = document.createElement('button');
+                downBtn.type = 'button';
+                downBtn.className = 'action-icon-btn';
+                downBtn.textContent = '↓';
+                downBtn.disabled = index === selectedMovies.length - 1;
+                downBtn.onclick = () => moveCurationItem(index, 1);
+                
+                const delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'action-icon-btn danger';
+                delBtn.textContent = '✕';
+                delBtn.onclick = () => removeMovieFromCuration(movie.id);
+                
+                actions.appendChild(upBtn);
+                actions.appendChild(downBtn);
+                actions.appendChild(delBtn);
+                
+                item.appendChild(details);
+                item.appendChild(actions);
+                list.appendChild(item);
+            });
+        }
+
+        async function handleSave4K(event) {
+            event.preventDefault();
+            const btn = document.getElementById('save-4k-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving curation...';
+
+            try {
+                const { error } = await syncClient
+                    .from('app_settings')
+                    .upsert({ key: '4k_movies_today', value: JSON.stringify(selectedMovies), updated_at: new Date() }, { onConflict: 'key' });
+                
+                if (error) throw error;
+                showToast('4K curation saved successfully!');
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to save 4K curation', false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save Curation';
+            }
+        }
+
+        // Save Settings to database
+        async function handleSaveSettings(event) {
+            event.preventDefault();
+            const saveBtn = document.getElementById('save-btn');
+            const defaultProvider = document.getElementById('default-provider-select').value;
+            const defaultProviderMobile = document.getElementById('default-provider-mobile-select').value;
+            const tmdbImageQuality = document.getElementById('tmdb-quality-select').value;
+            const newPasscode = document.getElementById('new-passcode-input').value.trim();
+
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            try {
+                // Save default provider
+                const { error: providerError } = await syncClient
+                    .from('app_settings')
+                    .upsert({ key: 'default_provider', value: defaultProvider, updated_at: new Date() }, { onConflict: 'key' });
+
+                if (providerError) throw providerError;
+
+                const { error: providerMobileError } = await syncClient
+                    .from('app_settings')
+                    .upsert({ key: 'default_provider_mobile', value: defaultProviderMobile, updated_at: new Date() }, { onConflict: 'key' });
+
+                if (providerMobileError) throw providerMobileError;
+
+                const { error: qualityError } = await syncClient
+                    .from('app_settings')
+                    .upsert({ key: 'tmdb_image_quality', value: tmdbImageQuality, updated_at: new Date() }, { onConflict: 'key' });
+
+                if (qualityError) throw qualityError;
+
+                // Save Groq API Keys
+                const key1 = document.getElementById('groq-key-1').value.trim();
+                const key2 = document.getElementById('groq-key-2').value.trim();
+                const key3 = document.getElementById('groq-key-3').value.trim();
+                const groqKeys = [key1, key2, key3].filter(Boolean);
+
+                const { error: groqKeysError } = await syncClient
+                    .from('app_settings')
+                    .upsert({ key: 'groq_keys', value: JSON.stringify(groqKeys), updated_at: new Date() }, { onConflict: 'key' });
+
+                if (groqKeysError) throw groqKeysError;
+
+                // Save YouTube API Keys
+                const ytInputs = document.querySelectorAll('.youtube-key-input')
+                const ytKeys = Array.from(ytInputs).map(i => i.value.trim()).filter(Boolean)
+                const { error: ytKeysError } = await syncClient
+                    .from('app_settings')
+                    .upsert({ key: 'youtube_api_keys', value: JSON.stringify(ytKeys), updated_at: new Date() }, { onConflict: 'key' })
+                if (ytKeysError) throw ytKeysError
+
+                // Save Wyzie API Keys
+                const wyzieInputs = document.querySelectorAll('.wyzie-key-input')
+                const wyzieKeys = Array.from(wyzieInputs).map(i => i.value.trim()).filter(Boolean)
+                const { error: wyzieKeysError } = await syncClient
+                    .from('app_settings')
+                    .upsert({ key: 'wyzie_api_keys', value: JSON.stringify(wyzieKeys), updated_at: new Date() }, { onConflict: 'key' })
+                if (wyzieKeysError) throw wyzieKeysError
+
+                // Save OpenSubtitles API Keys
+                const osInputs = document.querySelectorAll('.os-key-input')
+                const osKeys = Array.from(osInputs).map(i => i.value.trim()).filter(Boolean)
+                const { error: osKeysError } = await syncClient
+                    .from('app_settings')
+                    .upsert({ key: 'opensubtitles_api_keys', value: JSON.stringify(osKeys), updated_at: new Date() }, { onConflict: 'key' })
+                if (osKeysError) throw osKeysError
+
+                // Save VPS Proxy URL
+                const vpsUrl = document.getElementById('vps-proxy-url').value.trim();
+                const { error: vpsError } = await syncClient
+                    .from('app_settings')
+                    .upsert({ key: 'vps_proxy_base_url', value: vpsUrl, updated_at: new Date() }, { onConflict: 'key' });
+                if (vpsError) throw vpsError;
+
+                // Save default server overrides
+                const { error: overridesError } = await syncClient
+                    .from('app_settings')
+                    .upsert({ key: 'default_server_overrides', value: JSON.stringify(serverOverrides), updated_at: new Date() }, { onConflict: 'key' });
+                if (overridesError) throw overridesError;
+
+                // Save new passcode if provided
+                if (newPasscode) {
+                    const { error: passcodeError } = await syncClient
+                        .from('app_settings')
+                        .upsert({ key: 'admin_passcode', value: newPasscode, updated_at: new Date() }, { onConflict: 'key' });
+                    
+                    if (passcodeError) throw passcodeError;
+                    adminPasscode = newPasscode;
+                    document.getElementById('new-passcode-input').value = '';
+                }
+
+                showToast('Settings updated successfully!');
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to update settings', false);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Changes';
+            }
+        }
+
+        async function handleClearTmdbCache(event) {
+            if (event) event.preventDefault();
+            const btn = document.getElementById('clear-cache-btn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span>Clearing...</span>';
+
+            try {
+                // Upsert new cache bust timestamp for everyone
+                const { error } = await syncClient
+                    .from('app_settings')
+                    .upsert({ key: 'cache_bust_timestamp', value: new Date().toISOString(), updated_at: new Date() }, { onConflict: 'key' });
+
+                if (error) throw error;
+
+                // Delete local browser cache entries
+                if (window.caches) {
+                    await caches.delete('tmdb-api-cache-v1');
+                    await caches.delete('tmdb-api-cache-v2');
+                }
+                localStorage.removeItem('moovie_poster_cache_v1');
+
+                showToast('✅ Cache cleared globally for all users!');
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to clear cache globally', false);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        async function handleClearVpsCache(event) {
+            if (event) event.preventDefault();
+            const btn = document.getElementById('clear-vps-cache-btn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span>Clearing VPS cache...</span>';
+
+            try {
+                const vpsUrl = document.getElementById('vps-proxy-url').value.trim();
+                if (!vpsUrl) {
+                    showToast('VPS proxy URL not configured', false);
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    return;
+                }
+                const baseUrl = vpsUrl.replace(/\/+$/, '');
+                const res = await fetch(`${baseUrl}/api/tmdb-image-proxy/clear-cache`, { method: 'POST' });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                showToast(`✅ VPS image cache cleared (${data.deleted} files)`);
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to clear VPS image cache', false);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        // ==========================================
+        // NOTIFICATION FUNCTIONS
+        // ==========================================
+        async function handleSendNotification(event) {
+            event.preventDefault();
+            const title = document.getElementById('notif-title').value.trim();
+            if (!title) return;
+            const btn = document.getElementById('notif-btn');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            try {
+                const { error } = await syncClient.from('notifications').insert({
+                    title,
+                    message: document.getElementById('notif-message').value.trim(),
+                    type: document.getElementById('notif-type').value,
+                    created_by: 'admin',
+                    created_at: new Date().toISOString()
+                });
+                if (error) throw error;
+                showToast('Notification sent to all users!');
+                document.getElementById('notif-title').value = '';
+                document.getElementById('notif-message').value = '';
+                document.getElementById('notif-type').value = 'info';
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to send notification', false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Send to All Users';
+            }
+        }
+
+        // ==========================================
+        // BANNER FUNCTIONS
+        // ==========================================
+        async function loadBannerSettings() {
+            try {
+                const { data } = await syncClient.from('banners').select('*').order('created_at', { ascending: false }).limit(1).maybeSingle();
+                if (data) {
+                    document.getElementById('banner-message').value = data.message || '';
+                    document.getElementById('banner-link').value = data.link || '';
+                    document.getElementById('banner-bg').value = data.bg_color || '#ff5a1f';
+                    document.getElementById('banner-text-color').value = data.text_color || '#ffffff';
+                    document.getElementById('banner-active').checked = data.is_active || false;
+                }
+            } catch (err) { console.warn('Could not load banner:', err); }
+        }
+
+        async function handleSaveBanner(event) {
+            event.preventDefault();
+            const btn = document.getElementById('banner-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            try {
+                const { data: existing } = await syncClient.from('banners').select('id').order('created_at', { ascending: false }).limit(1).maybeSingle();
+                const payload = {
+                    message: document.getElementById('banner-message').value.trim(),
+                    link: document.getElementById('banner-link').value.trim(),
+                    bg_color: document.getElementById('banner-bg').value || '#ff5a1f',
+                    text_color: document.getElementById('banner-text-color').value || '#ffffff',
+                    is_active: document.getElementById('banner-active').checked,
+                    updated_at: new Date().toISOString()
+                };
+                if (existing) {
+                    await syncClient.from('banners').update(payload).eq('id', existing.id);
+                } else {
+                    await syncClient.from('banners').insert({ ...payload, created_at: new Date().toISOString() });
+                }
+                showToast('Banner saved!');
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to save banner', false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save Banner';
+            }
+        }
+
+        // ==========================================
+        // POLL FUNCTIONS
+        // ==========================================
+        let existingPollsData = [];
+
+        async function loadExistingPolls() {
+            try {
+                const { data } = await syncClient.from('polls').select('*').order('created_at', { ascending: false });
+                existingPollsData = (data || []).map(p => ({
+                    ...p,
+                    options: typeof p.options === 'string' ? JSON.parse(p.options) : p.options
+                }));
+                renderExistingPolls();
+            } catch (err) { console.warn('Could not load polls:', err); }
+        }
+
+        async function loadPollResults(pollId) {
+            try {
+                const { data: votes } = await syncClient.from('poll_votes').select('selected_option').eq('poll_id', pollId);
+                const poll = existingPollsData.find(p => String(p.id) === String(pollId));
+                if (!poll) return [];
+                const total = votes?.length || 0;
+                const counts = new Array(poll.options.length).fill(0);
+                votes?.forEach(v => {
+                    if (v.selected_option >= 0 && v.selected_option < poll.options.length) {
+                        counts[v.selected_option]++;
+                    }
+                });
+                return poll.options.map((opt, i) => ({
+                    option: opt,
+                    count: counts[i],
+                    percentage: total > 0 ? Math.round((counts[i] / total) * 100) : 0
+                }));
+            } catch { return []; }
+        }
+
+        async function renderExistingPolls() {
+            const container = document.getElementById('existing-polls');
+            if (existingPollsData.length === 0) {
+                container.innerHTML = '<div style="padding: 1.5rem; text-align: center; color: var(--bone-400); font-size: 0.9rem;">No polls created yet</div>';
+                return;
+            }
+            let html = '';
+            for (const poll of existingPollsData) {
+                const results = await loadPollResults(poll.id);
+                const totalVotes = results.reduce((sum, r) => sum + r.count, 0);
+                html += `
+                    <div style="background: rgba(245, 239, 228, 0.03); border: 1px solid var(--rule); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <span style="font-weight: 600; font-size: 0.95rem; color: var(--bone-100);">${escapeHtml(poll.question)}</span>
+                            <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.2rem 0.5rem; border-radius: 4px; background: ${poll.is_active ? 'rgba(107, 163, 104, 0.15)' : 'rgba(167, 159, 141, 0.15)'}; color: ${poll.is_active ? 'var(--success)' : 'var(--bone-300)'};">${poll.is_active ? 'Active' : 'Inactive'}</span>
+                        </div>
+                        ${results.map(r => `
+                            <div style="margin-bottom: 0.5rem;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--bone-300); margin-bottom: 2px;">
+                                    <span>${escapeHtml(r.option)}</span>
+                                    <span>${r.count} (${r.percentage}%)</span>
+                                </div>
+                                <div style="height: 6px; background: rgba(245, 239, 228, 0.06); border-radius: 3px; overflow: hidden;">
+                                    <div style="height: 100%; background: var(--ember); border-radius: 3px; width: ${r.percentage}%;"></div>
+                                </div>
+                            </div>
+                        `).join('')}
+                        <div style="text-align: center; font-size: 0.7rem; color: var(--bone-400); margin-top: 0.5rem;">${totalVotes} total votes</div>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                            <button type="button" class="btn btn-sm" onclick="handleTogglePoll('${poll.id}', ${!poll.is_active})">${poll.is_active ? 'Deactivate' : 'Activate'}</button>
+                            <button type="button" class="btn btn-sm" onclick="handleNotifyPoll('${poll.id}')">Notify All</button>
+                            <button type="button" class="btn btn-sm" style="background: #8a2a1e; color: var(--bone-50); box-shadow: none;" onclick="handleDeletePoll('${poll.id}')">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        async function handleCreatePoll(event) {
+            event.preventDefault();
+            const question = document.getElementById('poll-question').value.trim();
+            const optionsText = document.getElementById('poll-options').value.trim();
+            if (!question || !optionsText) return;
+            const options = optionsText.split('\n').map(s => s.trim()).filter(Boolean);
+            if (options.length < 2) {
+                showToast('Please provide at least 2 options', false);
+                return;
+            }
+            const btn = document.getElementById('poll-create-btn');
+            btn.disabled = true;
+            btn.textContent = 'Creating...';
+            try {
+                const { error } = await syncClient.from('polls').insert({
+                    question,
+                    options: JSON.stringify(options),
+                    is_active: document.getElementById('poll-active').checked,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                });
+                if (error) throw error;
+                showToast('Poll created!');
+                document.getElementById('poll-question').value = '';
+                document.getElementById('poll-options').value = '';
+                document.getElementById('poll-active').checked = false;
+                await loadExistingPolls();
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to create poll', false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Create Poll';
+            }
+        }
+
+        async function handleTogglePoll(pollId, newActive) {
+            try {
+                if (newActive) {
+                    await syncClient.from('polls').update({ is_active: false, updated_at: new Date().toISOString() }).neq('id', pollId);
+                }
+                await syncClient.from('polls').update({ is_active: newActive, updated_at: new Date().toISOString() }).eq('id', pollId);
+                const poll = existingPollsData.find(p => String(p.id) === String(pollId));
+                if (poll) poll.is_active = newActive;
+                showToast(`Poll ${newActive ? 'activated' : 'deactivated'}!`);
+                await renderExistingPolls();
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to update poll', false);
+            }
+        }
+
+        async function handleDeletePoll(pollId) {
+            if (!confirm('Delete this poll?')) return;
+            try {
+                await syncClient.from('poll_votes').delete().eq('poll_id', pollId);
+                await syncClient.from('polls').delete().eq('id', pollId);
+                existingPollsData = existingPollsData.filter(p => String(p.id) !== String(pollId));
+                showToast('Poll deleted!');
+                await renderExistingPolls();
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to delete poll', false);
+            }
+        }
+
+        async function handleNotifyPoll(pollId) {
+            const poll = existingPollsData.find(p => String(p.id) === String(pollId));
+            if (!poll) return;
+            try {
+                await syncClient.from('notifications').insert({
+                    title: 'New Poll',
+                    message: poll.question,
+                    type: 'info',
+                    created_at: new Date().toISOString(),
+                    created_by: 'admin'
+                });
+                showToast('Notification sent to all users!');
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to send notification', false);
+            }
+        }
+
+        // ==========================================
+        // SUGGESTIONS FUNCTIONS
+        // ==========================================
+        let existingSuggestionsData = [];
+        let viewingResponsesForId = null;
+        let currentResponses = [];
+
+        async function loadExistingSuggestions() {
+            try {
+                const { data } = await syncClient.from('suggestions').select('*').order('created_at', { ascending: false });
+                existingSuggestionsData = data || [];
+                for (const sug of existingSuggestionsData) {
+                    const { data: responses } = await syncClient.from('suggestion_responses').select('*', { count: 'exact', head: true }).eq('suggestion_id', sug.id);
+                    sug.response_count = responses?.length || 0;
+                }
+                renderExistingSuggestions();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderExistingSuggestions() {
+            const container = document.getElementById('existing-suggestions');
+            if (!existingSuggestionsData.length) {
+                container.innerHTML = '<div style="padding:1.5rem;text-align:center;color:#a79f8d;font-size:0.9rem">No suggestions created yet</div>';
+                return;
+            }
+            container.innerHTML = existingSuggestionsData.map(sug => `
+                <div style="background:rgba(245,239,228,0.03);border:1px solid rgba(245,239,228,0.08);border-radius:8px;padding:1rem;margin-bottom:1rem">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+                        <span style="font-weight:600;font-size:0.95rem;color:#e8e1d3">${escapeHtml(sug.prompt)}</span>
+                        <span style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:0.2rem 0.5rem;border-radius:4px;background:${sug.is_active ? 'rgba(107,163,104,0.15)' : 'rgba(167,159,141,0.15)'};color:${sug.is_active ? '#6ba368' : '#a79f8d'}">${sug.is_active ? 'Active' : 'Inactive'}</span>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;font-size:0.75rem;color:#a79f8d;margin-bottom:0.75rem">
+                        <span>${sug.response_count || 0} responses</span>
+                        <span>•</span>
+                        <span>Max ${sug.max_length} chars</span>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+                        <button type="button" class="btn btn--sm" onclick="toggleSuggestionActive('${sug.id}', ${!sug.is_active})">${sug.is_active ? 'Deactivate' : 'Activate'}</button>
+                        <button type="button" class="btn btn--sm" onclick="viewSuggestionResponses('${sug.id}')">View Responses (${sug.response_count})</button>
+                        <button type="button" class="btn btn--sm" style="background:#8a2a1e" onclick="deleteSuggestion('${sug.id}')">Delete</button>
+                    </div>
+                    <div id="responses-${sug.id}" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(245,239,228,0.08)"></div>
+                </div>
+            `).join('');
+        }
+
+        async function handleCreateSuggestion(e) {
+            e.preventDefault();
+            const btn = document.getElementById('create-suggestion-btn');
+            const prompt = document.getElementById('suggestion-prompt').value.trim();
+            const placeholder = document.getElementById('suggestion-placeholder').value.trim() || 'Write your feedback here…';
+            const maxLength = parseInt(document.getElementById('suggestion-maxlength').value) || 500;
+            const isActive = document.getElementById('suggestion-active').checked;
+            
+            if (!prompt) return;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span>Creating...</span>';
+            
+            try {
+                if (isActive) {
+                    await syncClient.from('suggestions').update({ is_active: false, updated_at: new Date().toISOString() }).neq('id', 0);
+                }
+                
+                await syncClient.from('suggestions').insert({
+                    prompt,
+                    placeholder,
+                    max_length: maxLength,
+                    is_active: isActive,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                });
+                
+                showToast('Suggestion created!');
+                document.getElementById('suggestion-prompt').value = '';
+                document.getElementById('suggestion-placeholder').value = '';
+                document.getElementById('suggestion-maxlength').value = '500';
+                document.getElementById('suggestion-active').checked = false;
+                
+                await loadExistingSuggestions();
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to create suggestion', false);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Create Suggestion</span>';
+            }
+        }
+
+        async function toggleSuggestionActive(id, newActive) {
+            try {
+                if (newActive) {
+                    await syncClient.from('suggestions').update({ is_active: false, updated_at: new Date().toISOString() }).neq('id', id);
+                }
+                await syncClient.from('suggestions').update({ is_active: newActive, updated_at: new Date().toISOString() }).eq('id', id);
+                const sug = existingSuggestionsData.find(s => String(s.id) === String(id));
+                if (sug) sug.is_active = newActive;
+                renderExistingSuggestions();
+                showToast(`Suggestion ${newActive ? 'activated' : 'deactivated'}!`);
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to update suggestion', false);
+            }
+        }
+
+        async function viewSuggestionResponses(id) {
+            const container = document.getElementById(`responses-${id}`);
+            if (viewingResponsesForId === id) {
+                container.style.display = 'none';
+                viewingResponsesForId = null;
+                return;
+            }
+            
+            viewingResponsesForId = id;
+            container.style.display = 'block';
+            container.innerHTML = '<div style="padding:1rem;text-align:center;color:#a79f8d">Loading responses...</div>';
+            
+            try {
+                const { data } = await syncClient.from('suggestion_responses').select('*').eq('suggestion_id', id).order('created_at', { ascending: false });
+                currentResponses = data || [];
+                
+                if (!currentResponses.length) {
+                    container.innerHTML = '<div style="padding:1rem;text-align:center;color:#a79f8d">No responses yet</div>';
+                    return;
+                }
+                
+                container.innerHTML = currentResponses.map(resp => `
+                    <div style="background:rgba(245,239,228,0.02);border:1px solid rgba(245,239,228,0.06);border-radius:6px;padding:0.75rem;margin-bottom:0.5rem">
+                        <div style="font-size:0.875rem;color:#c7bfb0;margin-bottom:0.5rem;line-height:1.5">${escapeHtml(resp.response_text)}</div>
+                        <div style="font-size:0.7rem;color:#a79f8d">${new Date(resp.created_at).toLocaleString()}</div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<div style="padding:1rem;text-align:center;color:#c94e3d">Failed to load responses</div>';
+            }
+        }
+
+        async function deleteSuggestion(id) {
+            if (!confirm('Delete this suggestion and all its responses?')) return;
+            try {
+                await syncClient.from('suggestion_responses').delete().eq('suggestion_id', id);
+                await syncClient.from('suggestions').delete().eq('id', id);
+                existingSuggestionsData = existingSuggestionsData.filter(s => String(s.id) !== String(id));
+                renderExistingSuggestions();
+                showToast('Suggestion deleted!');
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to delete suggestion', false);
+            }
+        }
+
+        // ==========================================
+        // DONATION TRACKER LOGIC
+        // ==========================================
+
+        const BTC_ADDR = 'bc1qkk0yyu8efu2gep5y59ev7s4j0wxnpxsfh4ympk';
+        const LTC_ADDR = 'ltc1qpnurrqnv466wa4uh6urh0ul5n4wu0rf8k5l25z';
+        const USDT_ADDR = 'TKfaywHdffM1iYdiSP3xFPajxgXwq2jmDG';
+        const USDT_CONTRACT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
+
+        async function fetchBtcBalance() {
+            try {
+                const res = await fetch(`https://api.blockchair.com/bitcoin/address/${BTC_ADDR}?limit=0,1`);
+                const json = await res.json();
+                const sat = json?.data?.[BTC_ADDR]?.balance ?? 0;
+                return sat / 1e8;
+            } catch { return 0; }
+        }
+
+        async function fetchLtcBalance() {
+            try {
+                const res = await fetch(`https://api.blockchair.com/litecoin/address/${LTC_ADDR}?limit=0,1`);
+                const json = await res.json();
+                const lit = json?.data?.[LTC_ADDR]?.balance ?? 0;
+                return lit / 1e8;
+            } catch { return 0; }
+        }
+
+        async function fetchUsdtBalance() {
+            try {
+                const res = await fetch(`https://api.trongrid.io/v1/accounts/${USDT_ADDR}?only_confirmed=true`);
+                const json = await res.json();
+                const tokens = json?.data?.[0]?.trc20 ?? [];
+                for (const t of tokens) {
+                    if (t[USDT_CONTRACT]) return Number(t[USDT_CONTRACT]) / 1e6;
+                }
+                return 0;
+            } catch { return 0; }
+        }
+
+        async function fetchPrices() {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,litecoin,tether&vs_currencies=usd');
+                const json = await res.json();
+                return { btc: json?.bitcoin?.usd ?? 0, ltc: json?.litecoin?.usd ?? 0 };
+            } catch { return { btc: 0, ltc: 0 }; }
+        }
+
+        async function refreshCryptoBalance() {
+            const loadingEl = document.getElementById('balance-loading');
+            const contentEl = document.getElementById('balance-content');
+            if (!loadingEl || !contentEl) return;
+            loadingEl.style.display = 'block';
+            contentEl.style.display = 'none';
+            loadingEl.textContent = 'Checking wallets...';
+            try {
+                const [btcBal, ltcBal, usdtBal, prices] = await Promise.all([
+                    fetchBtcBalance(),
+                    fetchLtcBalance(),
+                    fetchUsdtBalance(),
+                    fetchPrices()
+                ]);
+                const btcUsd = btcBal * prices.btc;
+                const ltcUsd = ltcBal * prices.ltc;
+                const totalUsd = btcUsd + ltcUsd + usdtBal;
+                document.getElementById('btc-usd').textContent = `$${btcUsd.toFixed(2)}`;
+                document.getElementById('ltc-usd').textContent = `$${ltcUsd.toFixed(2)}`;
+                document.getElementById('usdt-usd').textContent = `$${usdtBal.toFixed(2)}`;
+                document.getElementById('total-usd').textContent = `$${totalUsd.toFixed(2)}`;
+                loadingEl.style.display = 'none';
+                contentEl.style.display = 'block';
+            } catch (err) {
+                loadingEl.textContent = 'Failed to fetch wallet balance';
+                console.error(err);
+            }
+        }
+
+        async function loadDonationSettings() {
+            try {
+                const { data: raisedData } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'donation_raised')
+                    .single();
+                if (raisedData && raisedData.value) {
+                    document.getElementById('donation-raised').value = raisedData.value;
+                }
+                const { data: popupData } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'donation_popup_enabled')
+                    .single();
+                if (popupData && popupData.value !== null) {
+                    document.getElementById('donation-popup-enabled').checked = popupData.value === 'true';
+                }
+            } catch (err) {
+                console.warn('Could not load donation settings:', err);
+            }
+        }
+
+        async function handleSaveDonations(event) {
+            event.preventDefault();
+            const raised = document.getElementById('donation-raised').value.trim();
+            const popupEnabled = document.getElementById('donation-popup-enabled').checked ? 'true' : 'false';
+            const btn = document.getElementById('donation-save-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            try {
+                if (raised) {
+                    const { error: rErr } = await syncClient.from('app_settings').upsert({
+                        key: 'donation_raised',
+                        value: raised,
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'key' });
+                    if (rErr) throw rErr;
+                }
+                const { error: pErr } = await syncClient.from('app_settings').upsert({
+                    key: 'donation_popup_enabled',
+                    value: popupEnabled,
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'key' });
+                if (pErr) throw pErr;
+                showToast('Donation settings saved!');
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to save donation settings', false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save Donation Settings';
+            }
+        }
+
+        async function handleDonationNotif() {
+            const btn = document.getElementById('donation-notif-btn');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            try {
+                await syncClient.from('notifications').insert({
+                    title: 'Donation Received! 🎉',
+                    message: 'Thank you for supporting Moovie! A donation has been received.',
+                    type: 'success',
+                    created_at: new Date().toISOString(),
+                    created_by: 'admin'
+                });
+                showToast('Donation notification sent to all users!');
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to send donation notification', false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '❤️ Notify everyone — donation received!';
+            }
+        }
+
+        // ==========================================
+        // AD MANAGEMENT LOGIC
+        // ==========================================
+
+        async function loadAdSettings() {
+            try {
+                const { data: pcData } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'ads_pc_enabled')
+                    .single();
+                const pcEnabled = pcData?.value === 'true';
+                document.getElementById('ads-pc-toggle').checked = pcEnabled;
+                document.getElementById('ads-pc-status').textContent = pcEnabled ? 'Enabled' : 'Disabled';
+
+                const { data: mobileData } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'ads_mobile_enabled')
+                    .single();
+                const mobileEnabled = mobileData?.value === 'true';
+                document.getElementById('ads-mobile-toggle').checked = mobileEnabled;
+                document.getElementById('ads-mobile-status').textContent = mobileEnabled ? 'Enabled' : 'Disabled';
+
+                const { data: supportData } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'support_btn_hidden')
+                    .single();
+                const supportHidden = supportData?.value === 'true';
+                document.getElementById('support-btn-toggle').checked = supportHidden;
+                document.getElementById('support-btn-status').textContent = supportHidden ? 'Hidden' : 'Visible';
+            } catch (err) {
+                console.warn('Could not load ad settings:', err);
+            }
+        }
+
+        async function saveAdSettings() {
+            const pcChecked = document.getElementById('ads-pc-toggle').checked;
+            const mobileChecked = document.getElementById('ads-mobile-toggle').checked;
+            const supportHidden = document.getElementById('support-btn-toggle').checked;
+
+            document.getElementById('ads-pc-status').textContent = pcChecked ? 'Enabled' : 'Disabled';
+            document.getElementById('ads-mobile-status').textContent = mobileChecked ? 'Enabled' : 'Disabled';
+            document.getElementById('support-btn-status').textContent = supportHidden ? 'Hidden' : 'Visible';
+
+            try {
+                await syncClient.from('app_settings').upsert({
+                    key: 'ads_pc_enabled',
+                    value: pcChecked ? 'true' : 'false',
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'key' });
+
+                await syncClient.from('app_settings').upsert({
+                    key: 'ads_mobile_enabled',
+                    value: mobileChecked ? 'true' : 'false',
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'key' });
+
+                await syncClient.from('app_settings').upsert({
+                    key: 'support_btn_hidden',
+                    value: supportHidden ? 'true' : 'false',
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'key' });
+
+                showToast('Settings saved!');
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to save settings', false);
+            }
+        }
+
+        async function loadStreamProxySetting() {
+            try {
+                const { data } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'stream_proxy_enabled')
+                    .single();
+                const enabled = data?.value !== 'false';
+                document.getElementById('stream-proxy-toggle').checked = enabled;
+                document.getElementById('stream-proxy-status').textContent = enabled ? 'Enabled' : 'Disabled';
+            } catch (err) {
+                console.warn('Could not load stream proxy setting:', err);
+            }
+        }
+
+        async function saveStreamProxySetting() {
+            const checked = document.getElementById('stream-proxy-toggle').checked;
+            document.getElementById('stream-proxy-status').textContent = checked ? 'Enabled' : 'Disabled';
+            try {
+                await syncClient.from('app_settings').upsert({
+                    key: 'stream_proxy_enabled',
+                    value: checked ? 'true' : 'false',
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'key' });
+                showToast('Proxy setting saved!');
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to save proxy setting', false);
+            }
+        }
+
+        // ==========================================
+        // YOUTUBE API KEYS
+        // ==========================================
+
+        function addYoutubeKey(value = '') {
+            const container = document.getElementById('youtube-keys-container')
+            const row = document.createElement('div')
+            row.className = 'youtube-key-row'
+            row.style.cssText = 'display:flex;gap:0.5rem;margin-bottom:0.5rem;align-items:center'
+            row.innerHTML = `
+                <input type="password" class="form-input youtube-key-input" style="flex:1" placeholder="YouTube Data API Key" value="${value.replace(/"/g, '&quot;')}">
+                <button type="button" class="btn btn-sm btn-danger youtube-remove-btn" onclick="removeYoutubeKey(this)">&times;</button>
+            `
+            container.appendChild(row)
+        }
+
+        function removeYoutubeKey(btn) {
+            const row = btn.closest('.youtube-key-row')
+            if (row && document.querySelectorAll('.youtube-key-row').length > 1) {
+                row.remove()
+            } else {
+                showToast('Need at least one key row', false)
+            }
+        }
+
+        async function loadYoutubeApiKeys() {
+            try {
+                const { data } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'youtube_api_keys')
+                    .single()
+                const keys = data?.value ? JSON.parse(data.value) : ['']
+                const container = document.getElementById('youtube-keys-container')
+                container.innerHTML = ''
+                if (Array.isArray(keys) && keys.length) {
+                    keys.forEach((k) => addYoutubeKey(k))
+                } else {
+                    addYoutubeKey('')
+                }
+            } catch (err) {
+                console.warn('Could not load YouTube keys:', err)
+                addYoutubeKey('')
+            }
+        }
+
+        // ==========================================
+        // WYZIE SUBTITLE API KEYS
+        // ==========================================
+
+        function addWyzieKey(value = '') {
+            const container = document.getElementById('wyzie-keys-container')
+            const row = document.createElement('div')
+            row.className = 'wyzie-key-row'
+            row.style.cssText = 'display:flex;gap:0.5rem;margin-bottom:0.5rem;align-items:center'
+            row.innerHTML = `
+                <input type="password" class="form-input wyzie-key-input" style="flex:1" placeholder="Wyzie API Key" value="${value.replace(/"/g, '&quot;')}">
+                <button type="button" class="btn btn-sm btn-danger wyzie-remove-btn" onclick="removeWyzieKey(this)">&times;</button>
+            `
+            container.appendChild(row)
+        }
+
+        function removeWyzieKey(btn) {
+            const row = btn.closest('.wyzie-key-row')
+            if (row && document.querySelectorAll('.wyzie-key-row').length > 1) {
+                row.remove()
+            } else {
+                showToast('Need at least one key row', false)
+            }
+        }
+
+        async function loadWyzieApiKeys() {
+            try {
+                const { data } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'wyzie_api_keys')
+                    .single()
+                const keys = data?.value ? JSON.parse(data.value) : ['wyzie-m3moskoivi4mwobs7167pcscgmtou59j', 'wyzie-hcgpzwraxp8a73dkdponr2vudh4ojsm3']
+                const container = document.getElementById('wyzie-keys-container')
+                container.innerHTML = ''
+                if (Array.isArray(keys) && keys.length) {
+                    keys.forEach((k) => addWyzieKey(k))
+                } else {
+                    addWyzieKey('wyzie-m3moskoivi4mwobs7167pcscgmtou59j')
+                    addWyzieKey('wyzie-hcgpzwraxp8a73dkdponr2vudh4ojsm3')
+                }
+            } catch (err) {
+                console.warn('Could not load Wyzie keys, using defaults:', err)
+                addWyzieKey('wyzie-m3moskoivi4mwobs7167pcscgmtou59j')
+                addWyzieKey('wyzie-hcgpzwraxp8a73dkdponr2vudh4ojsm3')
+            }
+        }
+
+        // ==========================================
+        // OPENSUBTITLES API KEYS
+        // ==========================================
+
+        function addOsKey(value = '') {
+            const container = document.getElementById('os-keys-container')
+            const row = document.createElement('div')
+            row.className = 'os-key-row'
+            row.style.cssText = 'display:flex;gap:0.5rem;margin-bottom:0.5rem;align-items:center'
+            row.innerHTML = `
+                <input type="password" class="form-input os-key-input" style="flex:1" placeholder="OpenSubtitles API Key" value="${value.replace(/"/g, '&quot;')}">
+                <button type="button" class="btn btn-sm btn-danger os-remove-btn" onclick="removeOsKey(this)">&times;</button>
+            `
+            container.appendChild(row)
+        }
+
+        function removeOsKey(btn) {
+            const row = btn.closest('.os-key-row')
+            if (row && document.querySelectorAll('.os-key-row').length > 1) {
+                row.remove()
+            } else {
+                showToast('Need at least one key row', false)
+            }
+        }
+
+        async function loadOsApiKeys() {
+            try {
+                const { data } = await syncClient
+                    .from('app_settings')
+                    .select('value')
+                    .eq('key', 'opensubtitles_api_keys')
+                    .single()
+                const keys = data?.value ? JSON.parse(data.value) : ['']
+                const container = document.getElementById('os-keys-container')
+                container.innerHTML = ''
+                if (Array.isArray(keys) && keys.length) {
+                    keys.forEach((k) => addOsKey(k))
+                } else {
+                    addOsKey('')
+                }
+            } catch (err) {
+                console.warn('Could not load OpenSubtitles keys:', err)
+                addOsKey('')
+            }
+        }
+
+        // Initialize script
+        initSyncClient();
+    </script>
+</body>
+</html>

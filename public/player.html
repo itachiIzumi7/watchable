@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stream Player — CineStream</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        #player-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+        }
+
+        /* Status Overlay */
+        .status-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #0b0a08;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .status-spinner {
+            width: 44px;
+            height: 44px;
+            border: 3px solid rgba(255, 90, 31, 0.15);
+            border-top-color: #ff5a1f;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 1.25rem;
+        }
+
+        .status-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem;
+            color: #f5efe4;
+        }
+
+        .status-subtitle {
+            font-size: 0.95rem;
+            color: #9ca3af;
+            max-width: 400px;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            object-fit: contain;
+        }
+    </style>
+    <!-- HlsJS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script>
+      window.op=window.op||function(){var n=[];return new Proxy(function(){arguments.length&&n.push([].slice.call(arguments))},{get:function(t,r){return"q"===r?n:function(){n.push([r].concat([].slice.call(arguments)))}} ,has:function(t,r){return"q"===r}}) }();
+      window.op('init', {
+        clientId: 'e0bbeff6-b41b-4a3b-a329-add5ed7b333e',
+        trackScreenViews: true,
+        trackOutgoingLinks: true,
+        trackAttributes: true,
+        // sessionReplay: {
+        //   enabled: true,
+        // },
+      });
+    </script>
+    <script src="https://openpanel.dev/op1.js" defer async></script>
+    <!-- Ad Script (suppressed if Ad-Free Mode is enabled in Settings) -->
+    <script>
+      (function() {
+        try {
+          if (localStorage.getItem('ads_hidden') === 'true') return;
+        } catch (e) {}
+        var s = document.createElement('script');
+        s.setAttribute('data-cfasync', 'false');
+        s.src = '//dc9xwpjprguup.cloudfront.net/?pwxcd=1436467';
+        document.head.appendChild(s);
+      })();
+    </script>
+</head>
+<body>
+
+    <div id="player-container">
+        <!-- Status Overlay -->
+        <div id="status-overlay" class="status-overlay">
+            <div id="status-spinner" class="status-spinner"></div>
+            <div id="status-icon" class="error-icon" style="display: none;">🚨</div>
+            <h2 id="status-title" class="status-title">Striking Direct Stream</h2>
+            <p id="status-subtitle" class="status-subtitle">Contacting CineStream microservice resolvers...</p>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const type = urlParams.get('type') || 'movie';
+        const id = urlParams.get('id') || '';
+        const season = urlParams.get('season') || '1';
+        const episode = urlParams.get('episode') || '1';
+        const title = urlParams.get('title') || '';
+
+        const statusOverlay = document.getElementById('status-overlay');
+        const statusSpinner = document.getElementById('status-spinner');
+        const statusIcon = document.getElementById('status-icon');
+        const statusTitle = document.getElementById('status-title');
+        const statusSubtitle = document.getElementById('status-subtitle');
+
+        function showError(msg) {
+            statusSpinner.style.display = 'none';
+            statusIcon.style.display = 'block';
+            statusTitle.textContent = 'Unable to strike direct stream';
+            statusSubtitle.textContent = msg || 'All resolution mirrors returned offline status.';
+        }
+
+        async function initPlayer() {
+            if (!id) {
+                showError('Invalid or missing TMDB media identifier.');
+                return;
+            }
+
+            try {
+                // Determine API host (support localhost development)
+                let apiHost = '';
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    apiHost = 'http://localhost:3000';
+                }
+
+                const resolveUrl = `${apiHost}/api/cinestream?type=${type}&id=${id}&season=${season}&episode=${episode}&title=${encodeURIComponent(title)}`;
+                const res = await fetch(resolveUrl);
+                
+                if (!res.ok) {
+                    throw new Error('Resolver returned non-ok HTTP status');
+                }
+
+                const data = await res.json();
+                if (!data || !data.options || data.options.length === 0) {
+                    throw new Error('No streamable mirrors were found');
+                }
+
+                // Hide loader
+                statusOverlay.style.display = 'none';
+
+                const firstOption = data.options[0];
+                const format = firstOption.format || 'm3u8';
+                
+                const video = document.createElement('video');
+                video.controls = true;
+                video.playsInline = true;
+                video.autoplay = true;
+                document.getElementById('player-container').appendChild(video);
+
+                if (format === 'm3u8' && Hls.isSupported()) {
+                    const hls = new Hls({
+                        maxMaxBufferLength: 30,
+                        enableWorker: true
+                    });
+                    hls.loadSource(firstOption.url);
+                    hls.attachMedia(video);
+                } else {
+                    video.src = firstOption.url;
+                }
+
+            } catch (err) {
+                showError(err.message);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', initPlayer);
+    </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+# 1. Vite Hashed JS and CSS Bundles (1 Year Immutable Edge & Browser Cache)
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+# 2. Images, Artwork & Fonts (1 Month Edge & Browser Cache)
+/*.png
+  Cache-Control: public, max-age=2592000
+/*.jpg
+  Cache-Control: public, max-age=2592000
+/*.webp
+  Cache-Control: public, max-age=2592000
+/*.svg
+  Cache-Control: public, max-age=2592000
+/*.ico
+  Cache-Control: public, max-age=2592000
+/icons/*
+  Cache-Control: public, max-age=2592000
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+
+# 3. Service Worker & Manifest
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+/manifest.json
+  Cache-Control: public, max-age=86400
+
+# 4. Dynamic API, Proxy & Scraper Endpoints (Never Cache at Edge or Browser)
+/scrape/*
+  Cache-Control: no-cache, no-store, must-revalidate, max-age=0, s-maxage=0
+  Pragma: no-cache
+/proxy*
+  Cache-Control: no-cache, no-store, must-revalidate, max-age=0, s-maxage=0
+  Pragma: no-cache
+/api/*
+  Cache-Control: no-cache, no-store, must-revalidate, max-age=0, s-maxage=0
+  Pragma: no-cache
+/embed/*
+  Cache-Control: no-cache, no-store, must-revalidate, max-age=0, s-maxage=0
+  Pragma: no-cache

@@ -1,0 +1,293 @@
+<template>
+    <div v-if="isBareLayout" class="bare-stage">
+        <router-view />
+    </div>
+
+    <div v-else class="app-stage" :class="{ 'app-stage--party-embed': isPartyEmbed }">
+        <a v-if="!isPartyEmbed" class="app-skip" href="#main">Skip to content</a>
+
+        <span v-if="!isPartyEmbed" class="grain" aria-hidden="true" />
+
+        <BannerBar v-if="!isPartyEmbed" />
+
+        <PollPopup v-if="!isPartyEmbed" />
+        <SuggestionPopup v-if="!isPartyEmbed" />
+        <AndroidAppModal v-if="!isPartyEmbed" :is-open="isAppModalOpen" @close="closeAppModal" />
+
+        <router-view v-slot="{ Component, route }">
+            <Transition
+                :name="getTransitionName(route)"
+                mode="out-in"
+                appear
+            >
+                <KeepAlive
+                    :include="[
+                        'HomeShell'
+                    ]"
+                >
+                    <component :is="Component" :key="getRouteKey(route)" />
+                </KeepAlive>
+            </Transition>
+        </router-view>
+
+        <CommandPalette v-if="!isPartyEmbed" />
+
+        <Toast v-if="!isPartyEmbed" />
+    </div>
+</template>
+
+<script lang="ts" setup>
+import { computed, onMounted, onBeforeUnmount, watch, defineAsyncComponent } from 'vue';
+import { useRoute } from 'vue-router';
+import { getSettings, loadGlobalSettings } from './composables/useSettings';
+import { getSyncClient } from './lib/syncClient';
+import { setVpsProxyBaseUrl } from './utils/useWebImage';
+import { triggerAd } from './components/ads/triggerAd';
+import BannerBar from './components/navigation/BannerBar.vue';
+import PollPopup from './components/navigation/PollPopup.vue';
+import SuggestionPopup from './components/navigation/SuggestionPopup.vue';
+import AndroidAppModal from './components/navigation/AndroidAppModal.vue';
+import { useAndroidApp } from './composables/useAndroidApp';
+
+const { isAppModalOpen, closeAppModal, initAutoPrompt } = useAndroidApp();
+
+const route = useRoute();
+const isBareLayout = computed(() => Boolean(route.meta.bareLayout));
+watch(isBareLayout, (bare) => {
+    if (typeof document !== 'undefined') {
+        document.documentElement.classList.toggle('is-bare-layout', Boolean(bare));
+        document.body.classList.toggle('is-bare-layout', Boolean(bare));
+    }
+}, { immediate: true });
+const isPartyEmbed = computed(
+    () => Boolean(route.meta.partyEmbed) || route.query.embed === 'party'
+);
+const { region } = getSettings();
+
+const getRouteKey = (route: any) => {
+    if (route.name === 'StreamTVShow' && route.params.id) {
+        return `tv-stream-${route.params.id}-${region.value}`;
+    }
+    if ((route.name === 'StreamAnime' || route.name === 'StreamAnimeEpisode') && route.params.id) {
+        return `anime-stream-${route.params.id}-${region.value}`;
+    }
+    // Stable key: AniList browse links normalize to TMDB ids via router.replace.
+    // Path-based keys remount the page and replay the full loading skeleton.
+    if (route.name === 'AnimeDetail') {
+        return 'anime-detail';
+    }
+    // Do NOT include region in the key for Home/listing pages.
+    // Those pages handle region changes themselves via the movora_settings_change
+    // event + their own watch(region) watcher. Including region here would
+    // cause Vue to destroy+remount the component, which (a) loses scroll
+    // position, and (b) triggers loadData() twice (once from watcher, once
+    // from onMounted) creating a race that leaves all carousels in skeleton state.
+    return route.path;
+};
+
+const getTransitionName = (_route: any) => {
+    // All transitions disabled for instant navigation
+    return '';
+};
+
+const Toast = defineAsyncComponent(() => import('./components/feedback/Toast.vue'));
+const CommandPalette = defineAsyncComponent(() => import('./components/navigation/CommandPalette.vue'));
+
+
+// Lazy refs to cleanup functions — populated after dynamic import resolves
+let _stopReveal: (() => void) | null = null;
+let _uninstallAntiInspect: (() => void) | null = null;
+let _uninstallBotProtection: (() => void) | null = null;
+
+const initIdle = async () => {
+    const [
+        { bindCommandPaletteHotkey },
+        { startReveal, stopReveal },
+        { installAntiInspect, uninstallAntiInspect },
+        { installBotProtection, uninstallBotProtection }
+    ] = await Promise.all([
+        import('./composables/useCommandPalette'),
+        import('./composables/useReveal'),
+        import('./composables/useAntiInspect'),
+        import('./composables/useBotProtection')
+    ]);
+
+    bindCommandPaletteHotkey();
+    startReveal();
+    installBotProtection();
+    installAntiInspect();
+
+    _stopReveal = stopReveal;
+    _uninstallAntiInspect = uninstallAntiInspect;
+    _uninstallBotProtection = uninstallBotProtection;
+
+    // Prefetch main pages in the background
+    import('./pages/Movies.vue');
+    import('./pages/TVShows.vue');
+    import('./pages/Anime.vue');
+    import('./pages/Search.vue');
+    import('./pages/Watchlist.vue');
+    import('./pages/Upcoming.vue');
+};
+
+onMounted(async () => {
+    loadGlobalSettings();
+    try {
+        const sync = await getSyncClient();
+        const { data } = await sync
+            .from('app_settings')
+            .select('value')
+            .eq('key', 'vps_proxy_base_url')
+            .single();
+        if (data?.value) {
+            setVpsProxyBaseUrl(data.value);
+        }
+    } catch { /* no VPS proxy configured */ }
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => initIdle());
+    } else {
+        setTimeout(() => initIdle(), 100);
+    }
+
+    if (!isPartyEmbed.value) {
+        initAutoPrompt(10000);
+    }
+});
+
+watch(
+    () => route.fullPath,
+    (path, prevPath) => {
+        if (path === prevPath) return;
+        if (isBareLayout.value || isPartyEmbed.value) return;
+        if (path.startsWith('/party')) return;
+        setTimeout(() => triggerAd(), 250);
+    },
+    { immediate: false }
+);
+
+onBeforeUnmount(() => {
+    _stopReveal?.();
+    _uninstallBotProtection?.();
+    _uninstallAntiInspect?.();
+});
+</script>
+
+<style lang="scss">
+.app-stage {
+    position: relative;
+    min-height: 100vh;
+    min-height: 100dvh;
+    isolation: isolate;
+
+    &--party-embed {
+        min-height: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #000;
+    }
+}
+
+
+
+// ── Skip-to-content link ─────────────────────────────────────────────────────
+.app-skip {
+    position: fixed;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 10000;
+    padding: 0.6rem 1rem;
+    background: #000;
+    color: var(--ember);
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: var(--r-pill);
+    text-decoration: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    transform: translateY(-200%);
+    transition: transform var(--dur-base) var(--ease-out);
+
+    &:focus,
+    &:focus-visible {
+        transform: translateY(0);
+        outline: 2px solid var(--bone-50);
+        outline-offset: 2px;
+    }
+}
+
+// ── Global page transition ───────────────────────────────────────────────────
+// No transition - instant page switches
+.page-enter-active,
+.page-leave-active {
+    transition: none;
+}
+
+// ── Fade transition (for modals) ─────────────────────────────────────────────
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-enter-active,
+    .page-leave-active,
+    .fade-enter-active,
+    .fade-leave-active {
+        transition: opacity calc(var(--dur-fast) * 0.5) linear;
+    }
+    .page-enter-from,
+    .page-leave-to,
+    .fade-enter-from,
+    .fade-leave-to {
+        transform: none;
+    }
+}
+
+// ── Global focus-visible ring ────────────────────────────────────────────────
+:focus-visible {
+    outline: 2px solid var(--ember);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+// Inputs/selects in our pill controls already have focus borders — strip the
+// double ring there to keep the editorial look clean.
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: none;
+}
+
+img {
+    -webkit-user-drag: none;
+    user-drag: none;
+}
+
+.bare-stage {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    background: #000;
+}
+
+:global(html.is-bare-layout),
+:global(body.is-bare-layout),
+:global(#app:has(.bare-stage)) {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #000 !important;
+}
+
+</style>

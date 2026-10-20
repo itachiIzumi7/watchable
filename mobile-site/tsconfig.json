@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "preserve",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* Path Aliases */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["../src/*"],
+      "vue": ["node_modules/vue"],
+      "vue-router": ["node_modules/vue-router"],
+      "@vueuse/core": ["node_modules/@vueuse/core"],
+      "axios": ["node_modules/axios"],
+      "artplayer": ["node_modules/artplayer"],
+      "hls.js": ["node_modules/hls.js"],
+      "plyr": ["node_modules/plyr/src/js/plyr.d.ts", "../node_modules/plyr/src/js/plyr.d.ts"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue"
+  ]
+}

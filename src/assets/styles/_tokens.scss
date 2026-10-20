@@ -1,0 +1,232 @@
+// ============================================================================
+// LUMIÈRE — Design Tokens
+// Single source of truth for color, type, space, radius, shadow, motion.
+// Consumed globally via `main.scss`. Values exposed as CSS custom properties
+// so runtime theming (ambient-color bloom, etc.) can override.
+// ============================================================================
+
+:root {
+  // ── Color: stage ─────────────────────────────────────────────────────────
+  // Translucent inks — the ambient aurora (body::before) bleeds through every
+  // surface, so all panes share one blended, glassy ground.
+  --ink-900: #0a0908;                 // primary stage
+  --ink-850: rgba(12, 10, 9, 0.94);  // body variant
+  --ink-800: rgba(18, 14, 12, 0.94);  // surface / cards
+  --ink-700: rgba(26, 19, 15, 0.95);  // elevated surface
+  --ink-600: rgba(38, 27, 21, 0.96);  // hover surface
+  --ink-500: rgba(52, 35, 26, 0.96);  // rule-heavy contexts
+
+  // ── Color: text ──────────────────────────────────────────────────────────
+  --bone-50: #e8e3dc;   // softened primary text
+  --bone-100: #d8d2ca;
+  --bone-200: #b9b2aa;  // softened secondary text
+  --bone-300: #9b958e;
+  --bone-400: #817b75;  // tertiary / captions
+  --bone-500: #68635e;
+
+  // ── Color: accent ────────────────────────────────────────────────────────
+  --ember: #e88952;     // muted burnt-orange accent
+  --ember-600: #d8753f;
+  --ember-700: #bb5e32;
+  --ember-glow: rgba(232, 137, 82, 0.22);
+
+  --gold-leaf: #f0a064; // warm accent for active states
+  --gold-leaf-soft: rgba(232, 137, 82, 0.12);
+
+  // ── Color: semantic ──────────────────────────────────────────────────────
+  --rule: rgba(232, 137, 82, 0.12);
+  --rule-strong: rgba(232, 137, 82, 0.2);
+  --surface-tint: rgba(232, 137, 82, 0.045);
+  --surface-tint-hover: rgba(232, 137, 82, 0.085);
+  --overlay-scrim: rgba(6, 5, 4, 0.62);
+
+  // ── Color: glass ─────────────────────────────────────────────────────────
+  // Real-glass recipe: translucent panes + hairline + top sheen + blur.
+  --glass: rgba(14, 11, 10, 0.94);
+  --glass-strong: rgba(8, 7, 6, 0.98);
+  --glass-raised: rgba(25, 18, 14, 0.96);
+  --glass-border: rgba(245, 180, 130, 0.1);
+  --glass-border-strong: rgba(245, 180, 130, 0.18);
+  --glass-sheen: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(255, 255, 255, 0.015) 40%,
+    rgba(255, 255, 255, 0) 62%
+  );
+  --glass-sheen-strong: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.09) 0%,
+    rgba(255, 255, 255, 0.02) 45%,
+    rgba(255, 255, 255, 0) 65%
+  );
+  --blur-soft: blur(6px) saturate(120%);
+  --blur-pane: blur(10px) saturate(125%);
+  --blur-strong: blur(14px) saturate(130%);
+  --shadow-pane:
+    0 20px 60px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  --success: #6ba368;
+  --warn: #d8a24b;
+  --danger: #c94e3d;
+
+  // Ambient bloom — overridden per-page via useAmbientColor
+  --ambient: 255, 255, 255;
+
+  // ── Typography ───────────────────────────────────────────────────────────
+  --font-display: 'Fraunces', 'Times New Roman', Georgia, serif;
+  --font-ui: 'General Sans', ui-sans-serif, system-ui, -apple-system,
+             BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  // Harmonious density scale
+  --fs-xs: 0.75rem;     // 12px
+  --fs-sm: 0.8125rem;   // 13px
+  --fs-base: 0.9375rem; // 15px
+  --fs-lg: 1.125rem;    // 18px
+  --fs-xl: 1.375rem;    // 22px
+  --fs-2xl: 1.625rem;   // 26px
+  --fs-3xl: 2rem;       // 32px
+  --fs-4xl: 2.5rem;     // 40px
+  --fs-5xl: 3.125rem;   // 50px
+  --fs-6xl: 3.75rem;    // 60px
+  --fs-display: 4.5rem; // 72px
+
+  --lh-tight: 1.08;
+  --lh-snug: 1.25;
+  --lh-base: 1.55;
+  --lh-loose: 1.75;
+
+  --ls-tight: -0.02em;
+  --ls-snug: -0.01em;
+  --ls-wide: 0.02em;
+  --ls-micro: 0.08em; // for caps labels
+
+  // ── Space (8pt baseline) ─────────────────────────────────────────────────
+  --s-0: 0;
+  --s-1: 0.25rem;   // 4
+  --s-2: 0.5rem;    // 8
+  --s-3: 0.75rem;   // 12
+  --s-4: 1rem;      // 16
+  --s-5: 1.25rem;   // 20
+  --s-6: 1.75rem;   // 28
+  --s-7: 2.5rem;    // 40
+  --s-8: 3.5rem;    // 56
+  --s-9: 5rem;      // 80
+  --s-10: 6.5rem;   // 104
+
+  // ── Layout ───────────────────────────────────────────────────────────────
+  --container-max: 1440px;
+  --container-gutter: clamp(1rem, 2.5vw, 2.25rem);
+  --site-header-height: 62px;
+  --shelf-gap: clamp(2rem, 3.8vw, 3.75rem);   // between editorial shelves
+  --shelf-gap-mobile: var(--s-6);
+
+  // ── Radius ───────────────────────────────────────────────────────────────
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 14px;
+  --r-xl: 22px;
+  --r-pill: 999px;
+
+  // ── Shadow ───────────────────────────────────────────────────────────────
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.40);
+  --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.55);
+  --shadow-bloom: 0 0 80px rgba(var(--ambient), 0.22);
+
+  // ── Motion ───────────────────────────────────────────────────────────────
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --dur-fast: 180ms;
+  --dur-base: 320ms;
+  --dur-slow: 640ms;
+
+  // ── Z-index ──────────────────────────────────────────────────────────────
+  --z-base: 1;
+  --z-rail: 10;
+  --z-header: 50;
+  --z-drawer: 80;
+  --z-dialog: 100;
+  --z-toast: 120;
+  --z-miniplayer: 140;
+  --z-command: 160;
+}
+
+// Prefer reduced motion ------------------------------------------------------
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+  }
+}
+
+// Responsive container widths for large desktop screens and TVs ----------------
+@media (min-width: 1400px) {
+  :root {
+    --container-max: 1400px;
+  }
+}
+@media (min-width: 1536px) {
+  :root {
+    --container-max: 1500px;
+  }
+}
+@media (min-width: 1720px) {
+  :root {
+    --container-max: 1640px;
+  }
+}
+@media (min-width: 1920px) {
+  :root {
+    --container-max: 1780px;
+  }
+}
+@media (min-width: 2200px) {
+  :root {
+    --container-max: 2040px;
+  }
+}
+@media (min-width: 2500px) {
+  :root {
+    --container-max: 2400px;
+  }
+}
+@media (min-width: 3000px) {
+  :root {
+    --container-max: 2840px;
+  }
+}
+@media (min-width: 3400px) {
+  :root {
+    --container-max: 3240px;
+  }
+}
+@media (min-width: 3800px) {
+  :root {
+    --container-max: 3600px;
+  }
+}
+@media (min-width: 4400px) {
+  :root {
+    --container-max: 4200px;
+  }
+}
+@media (min-width: 5000px) {
+  :root {
+    --container-max: 4800px;
+  }
+}
+@media (min-width: 6000px) {
+  :root {
+    --container-max: 5600px;
+  }
+}
+@media (min-width: 7500px) {
+  :root {
+    --container-max: 7200px;
+  }
+}
