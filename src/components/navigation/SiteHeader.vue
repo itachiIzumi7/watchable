@@ -89,6 +89,7 @@
                 </router-link>
 
                 <button
+                    v-if="isAppEnabled"
                     type="button"
                     class="site-header__icon-btn site-header__android-btn"
                     aria-label="Download Android App"
@@ -200,6 +201,7 @@
                 </router-link>
 
                 <button
+                    v-if="isAppEnabled"
                     type="button"
                     class="site-header__drawer-link"
                     @click="openAppModal(); drawerOpen = false"
@@ -320,7 +322,7 @@ export default defineComponent({
     components: { LmDrawer, AuthModal, SettingsModal, NotificationBell, AndroidIcon },
     setup() {
         const route = useRoute();
-        const { isAppModalOpen, openAppModal } = useAndroidApp();
+        const { isAppEnabled, isAppModalOpen, openAppModal } = useAndroidApp();
         const isPartyRoute = computed(() => route.path === '/party' || route.path.startsWith('/party/'));
         const scrolled = ref(false);
 
@@ -510,6 +512,7 @@ export default defineComponent({
             isSettingsModalOpen,
             isAppModalOpen,
             openAppModal,
+            isAppEnabled,
 
             currentUser,
             handleLogout,

@@ -9,8 +9,11 @@ let autoPromptTimer: ReturnType<typeof setTimeout> | null = null;
 export function useAndroidApp() {
     const { addToast } = useToast();
 
+    const isAppEnabled = computed(() => Boolean(ANDROID_APP_CONFIG.enabled));
+
     const hasDownloadUrl = computed(() => {
         return Boolean(
+            isAppEnabled.value &&
             ANDROID_APP_CONFIG.apkDownloadUrl &&
             ANDROID_APP_CONFIG.apkDownloadUrl.trim() !== '#' &&
             ANDROID_APP_CONFIG.apkDownloadUrl.trim() !== ''
@@ -26,6 +29,7 @@ export function useAndroidApp() {
     };
 
     const openAppModal = () => {
+        if (!isAppEnabled.value) return;
         isAppModalOpen.value = true;
     };
 
@@ -41,6 +45,7 @@ export function useAndroidApp() {
     };
 
     const initAutoPrompt = (delayMs: number = 10000) => {
+        if (!isAppEnabled.value) return;
         if (typeof window === 'undefined' || isPromptDismissed()) return;
 
         if (autoPromptTimer) {
@@ -48,7 +53,7 @@ export function useAndroidApp() {
         }
 
         autoPromptTimer = setTimeout(() => {
-            if (isPromptDismissed() || isAppModalOpen.value) return;
+            if (!isAppEnabled.value || isPromptDismissed() || isAppModalOpen.value) return;
 
             // Don't interrupt if the user navigated to an active video player / stream / party embed
             const path = (window.location.pathname || '').toLowerCase();
@@ -89,6 +94,7 @@ export function useAndroidApp() {
     };
 
     return {
+        isAppEnabled,
         isAppModalOpen,
         hasDownloadUrl,
         isPromptDismissed,

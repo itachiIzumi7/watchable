@@ -3,6 +3,7 @@
  * You can paste the direct download URL in `apkDownloadUrl` whenever ready.
  */
 export interface AndroidAppConfig {
+    enabled: boolean;
     appName: string;
     version: string;
     releaseDate: string;
@@ -19,13 +20,14 @@ export interface AndroidAppConfig {
 }
 
 export const ANDROID_APP_CONFIG: AndroidAppConfig = {
+    enabled: false,
     appName: 'Streamly',
     version: '1.0.1',
     releaseDate: 'October 2026',
     fileSize: '40 MB',
     minAndroid: 'Android 7.0 (Nougat) or newer',
     packageName: 'com.streamly.app',
-    apkDownloadUrl: '/download',
+    apkDownloadUrl: '',
     releaseNotes: 'Streamly v1.0.1: Optimized ~40 MB lightweight APK, faster performance, smart auto-updates, zero ads, instant native ExoPlayer playback, 4K streaming, and full Android TV D-pad remote support.',
     features: [
         {

@@ -137,7 +137,7 @@
                     </section>
 
                     <!-- Section: Android Mobile App -->
-                    <section class="settings-card">
+                    <section v-if="isAppEnabled" class="settings-card">
                         <div class="settings-card__header">
                             <div class="settings-card__icon-box" style="background: rgba(61, 220, 132, 0.15); color: #3ddc84; border-color: rgba(61, 220, 132, 0.3);">
                                 <AndroidIcon :size="24" />
@@ -322,7 +322,7 @@ const { updateSeo } = useSeo();
 const { region, language, updateSettings } = getSettings();
 const { addToast } = useToast();
 const { savedRoute, draftRoute, saveRoute } = usePlaybackRoute();
-const { openAppModal, config: appConfig } = useAndroidApp();
+const { isAppEnabled, openAppModal, config: appConfig } = useAndroidApp();
 
 const routeLabel = computed(() => {
     const map: Record<PlaybackRoute, string> = {
