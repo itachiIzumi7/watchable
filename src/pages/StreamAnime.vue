@@ -24,16 +24,19 @@
 
         <!-- Full-screen video layer -->
         <div class="watch-stage__video-layer">
-            <StreamFrame
-                :embed-url="currentEmbedUrl"
-                :title="animeTitle || 'Anime Player'"
+            <MoovieFrame
+                ref="frameRef"
+                :media-id="animeId"
+                media-type="anime"
+                :season="activeTmdbSeason"
+                :episode="currentEpisode"
+                :title="animeTitle || 'Anime'"
                 :backdrop-path="tmdbBackdropPath"
                 :poster-path="tmdbPosterPath"
-                :media-id="resolvedAnilistId || animeId"
-                media-type="anime"
-                :embed-provider="isAnimeplayServer ? 'animeplay' : 'default'"
-                :episode="currentEpisode"
-                @switch-to-server="activeServerIndex = $event"
+                :audio-mode="activeLanguage"
+                @embed-change="onEmbedChange"
+                @next-episode="goToNextEpisode"
+                @prev-episode="goToPreviousEpisode"
             />
         </div>
 
@@ -89,16 +92,13 @@
                     </div>
                 </div>
                 <div class="watch-stage__top-right">
-                    <!-- Language toggle (only for non-Videasy servers) -->
-                    <div
-                        v-if="availableServers[activeServerIndex]?.name !== 'Videasy'"
-                        class="watch-stage__lang-pill"
-                    >
+                    <!-- Language toggle -->
+                    <div class="watch-stage__lang-pill">
                         <button
                             type="button"
                             class="watch-stage__lang-pill-btn"
                             :class="{ 'is-active': activeLanguage === 'sub' }"
-                            @click="activeLanguage = 'sub'"
+                            @click="changeLanguage('sub')"
                         >
                             SUB
                         </button>
@@ -106,7 +106,7 @@
                             type="button"
                             class="watch-stage__lang-pill-btn"
                             :class="{ 'is-active': activeLanguage === 'dub' }"
-                            @click="activeLanguage = 'dub'"
+                            @click="changeLanguage('dub')"
                         >
                             DUB
                         </button>
@@ -116,7 +116,7 @@
                         variant="dropdown"
                         :servers="availableServers"
                         :active-server-index="activeServerIndex"
-                        @server-change="activeServerIndex = $event"
+                        @server-change="onServerChange"
                     />
 
                     <button
@@ -136,7 +136,7 @@
                         <span class="watch-stage__party-label">{{ inWatchlist ? 'In Watchlist' : 'Watchlist' }}</span>
                     </button>
 
-                    <template v-if="seasonsList.length > 1 || availableServers[activeServerIndex]?.name !== 'Videasy'">
+                    <template v-if="seasonsList.length > 1 || true">
                         <details class="watch-stage__options">
                             <summary class="watch-stage__options-trigger">
                                 <span>Options</span>
@@ -165,7 +165,6 @@
                                     </select>
                                 </div>
                                 <div
-                                    v-if="availableServers[activeServerIndex]?.name !== 'Videasy'"
                                     class="watch-stage__option-group"
                                 >
                                     <p class="eyebrow watch-stage__option-label">Language Pref</p>
@@ -274,11 +273,10 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAniList } from '../composables/useAniList';
 import { saveProgress } from '../composables/useProgress';
 import { addViewedItem } from '../composables/useHistory';
-import { Server } from '../composables/useStream';
+import { animeServers } from '../composables/useStream';
 import { Episode } from '../composables/useTvShows';
-import StreamFrame from '../components/player/StreamFrame.vue';
+import MoovieFrame from '../components/player/MoovieFrame.vue';
 import ServerAccordion from '../components/player/ServerAccordion.vue';
-
 import UpNextDrawer from '../components/player/UpNextDrawer.vue';
 import { useAppPaths } from '../composables/useAppPaths';
 import { isInWatchlist, toggleWatchlistItem, type WatchlistItem } from '../composables/useWatchlist';
@@ -289,9 +287,7 @@ import {
     sortEpisodes,
     type EpisodeLike
 } from '../utils/episodeAvailability';
-import { resolveAnimeplayStreamEpisode } from '../composables/useAnimeplay';
 import {
-    buildAnimeEmbedUrl,
     estimateAnimeEpisodeTotal,
     findTmdbSeasonTabForEpisode,
     getCachedAnimeTmdbArtwork,
@@ -314,7 +310,7 @@ export default defineComponent({
     name: 'StreamAnime',
     components: {
         ServerAccordion,
-        StreamFrame,
+        MoovieFrame,
         UpNextDrawer,
         CommentsSection,
         EpisodeNavigator
@@ -369,16 +365,37 @@ export default defineComponent({
 
         const animeTitle = computed(() => tmdbShow.value?.name || '');
 
-        const availableServers: Server[] = [
-            { name: 'Sugar', urlTemplate: 'https://megaplay.buzz/stream/ani/{id}/{episode}/{lang}' },
-            { name: 'Shrikhand', urlTemplate: 'https://animeplay.cfd/stream/ani/{id}/{episode}/{lang}' },
-            { name: 'Barfi', urlTemplate: 'https://player.videasy.net/anime/{id}/{episode}?color=E05A47&autoplayNextEpisode=true&overlay=true' }
-        ];
+        const frameRef = ref<InstanceType<typeof MoovieFrame> | null>(null);
 
-        const isAnimeplayServer = computed(() => {
-            const server = availableServers[activeServerIndex.value];
-            return server?.name === 'Sugar' || server?.name === 'Shrikhand' || server?.name === 'Rabri';
+        const availableServers = animeServers;
+
+        const onServerChange = (index: number) => {
+            activeServerIndex.value = index;
+            const target = availableServers.value[index];
+            if (target && frameRef.value?.selectServer) {
+                frameRef.value.selectServer(target.name);
+            }
+        };
+
+        watch(() => frameRef.value?.selectedServer, (name) => {
+            if (!name) return;
+            const idx = availableServers.value.findIndex(s => s.name.toLowerCase() === name.toLowerCase());
+            if (idx !== -1) {
+                activeServerIndex.value = idx;
+            }
         });
+
+        const changeLanguage = (lang: 'sub' | 'dub') => {
+            activeLanguage.value = lang;
+            if (frameRef.value?.changeAudioMode) {
+                frameRef.value.changeAudioMode(lang);
+            }
+        };
+
+        const embedActive = ref(false);
+        const onEmbedChange = (val: boolean) => {
+            embedActive.value = val;
+        };
 
         const globalMaxEpisode = computed(() =>
             estimateAnimeEpisodeTotal(
@@ -508,33 +525,9 @@ export default defineComponent({
             isFullscreen.value = !!document.fullscreenElement;
         };
 
-        const embedEpisode = computed(() => {
-            if (!isAnimeplayServer.value) return currentEpisode.value;
-            return resolveAnimeplayStreamEpisode(
-                currentEpisode.value,
-                anilistPlaybackMeta.value,
-                globalMaxEpisode.value
-            );
-        });
+        const isAnimeplayServer = computed(() => false);
 
-        const currentEmbedUrl = computed(() => {
-            if (isNavigatingToParty.value || !animeId.value || !anilistIdRef.value) return '';
-            const server = availableServers[activeServerIndex.value];
-            const isMovie = tmdbArtwork.value?.mediaType === 'movie' || totalEpisodes.value === 1;
-
-            return buildAnimeEmbedUrl(
-                server.name,
-                animeId.value,
-                anilistIdRef.value,
-                embedEpisode.value,
-                tmdbEpisodes.value,
-                {
-                    lang: activeLanguage.value,
-                    isMovie,
-                    seasonTabs: tmdbArtwork.value?.seasonTabs ?? []
-                }
-            );
-        });
+        const currentEmbedUrl = computed(() => '');
 
         const resolvedAnilistId = computed(() => anilistIdRef.value);
 
@@ -1233,6 +1226,8 @@ export default defineComponent({
 
         return {
             animeId,
+            activeTmdbSeason,
+            totalEpisodes,
             resolvedAnilistId,
             tmdbShow,
             animeTitle,
@@ -1244,6 +1239,11 @@ export default defineComponent({
             tmdbBackdropPath,
             activeServerIndex,
             availableServers,
+            frameRef,
+            onServerChange,
+            changeLanguage,
+            onEmbedChange,
+            embedActive,
             isAnimeplayServer,
             currentEmbedUrl,
             partyHref,

@@ -54,19 +54,6 @@
                     <button
                         v-if="movie"
                         type="button"
-                        class="watch-stage__party-btn watch-stage__embed-btn"
-                        aria-label="Embed mode"
-                        title="Open Videasy embed"
-                        @click="toggleEmbed"
-                    >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="watch-stage__party-icon">
-                            <rect x="2" y="4" width="20" height="16" rx="2" />
-                            <path d="M10 9l5 3-5 3V9z" />
-                        </svg>
-                    </button>
-                    <button
-                        v-if="movie"
-                        type="button"
                         class="watch-stage__party-btn watch-stage__watchlist-btn"
                         :class="{ 'is-added': inWatchlist }"
                         :aria-label="inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'"
@@ -144,9 +131,6 @@ export default defineComponent({
         const embedActive = ref(true);
         const onEmbedChange = (active: boolean) => {
             embedActive.value = active;
-        };
-        const toggleEmbed = () => {
-            frameRef.value?.toggleEmbedMode?.();
         };
 
         const loadMovie = async () => {
@@ -272,7 +256,7 @@ export default defineComponent({
             scheduleHide,
             inWatchlist,
             toggleWatchlist,
-            toggleEmbed,
+            frameRef,
             onEmbedChange,
             embedActive,
         };

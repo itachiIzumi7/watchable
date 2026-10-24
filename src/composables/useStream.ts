@@ -72,7 +72,30 @@ export const tvServers = ref<Server[]>([
   { name: 'Killua', urlTemplate: '', isApiProvider: true },
 ]);
 
+export const animeServers = ref<Server[]>([
+  { name: 'Shisui', urlTemplate: '', isApiProvider: true },
+  { name: 'Yuji', urlTemplate: '', isApiProvider: true },
+  { name: 'Megumi', urlTemplate: '', isApiProvider: true },
+  { name: 'Toji', urlTemplate: '', isApiProvider: true },
+  { name: 'Nobara', urlTemplate: '', isApiProvider: true },
+  { name: 'Goku', urlTemplate: '', isApiProvider: true },
+  { name: 'Itachi Anime', urlTemplate: '', isApiProvider: true },
+  { name: 'Saitama', urlTemplate: '', isApiProvider: true },
+  { name: 'Itachi', urlTemplate: '', isApiProvider: true },
+  { name: 'Madara', urlTemplate: '', isApiProvider: true },
+  { name: 'Obito', urlTemplate: '', isApiProvider: true },
+  { name: 'Minato', urlTemplate: '', isApiProvider: true },
+]);
+
 const idToNameMap: Record<string, string> = {
+  shisui: 'Shisui',
+  yuji: 'Yuji',
+  megumi: 'Megumi',
+  toji: 'Toji',
+  nobara: 'Nobara',
+  goku: 'Goku',
+  'itachi anime': 'Itachi Anime',
+  saitama: 'Saitama',
   itachi: 'Itachi',
   madara: 'Madara',
   obito: 'Obito',

@@ -843,18 +843,30 @@ export default defineComponent({
     name: 'MoovieFrame',
     props: {
         mediaId: { type: [String, Number], default: '' },
-        mediaType: { type: String as () => 'movie' | 'tv', default: 'movie' },
+        mediaType: { type: String as () => 'movie' | 'tv' | 'anime', default: 'movie' },
         season: { type: Number, default: 0 },
         episode: { type: Number, default: 0 },
         autoEmbed: { type: Boolean, default: false },
         title: { type: String, default: 'Stream' },
         backdropPath: { type: String, default: '' },
         posterPath: { type: String, default: '' },
+        audioMode: { type: String as () => 'sub' | 'dub', default: 'sub' },
     },
     emits: ['next-episode', 'prev-episode', 'embed-change'],
     setup(props, ctx) {
         const rootRef = ref<HTMLElement | null>(null)
         const videoRef = ref<HTMLVideoElement | null>(null)
+        const currentAudioMode = ref<'sub' | 'dub'>(props.audioMode || 'sub')
+        watch(() => props.audioMode, (newMode) => {
+            if (newMode && newMode !== currentAudioMode.value) {
+                currentAudioMode.value = newMode
+                void doLoad()
+            }
+        })
+        function changeAudioMode(mode: 'sub' | 'dub') {
+            currentAudioMode.value = mode
+            void doLoad()
+        }
 
         const subtitleDelay = ref(0)
         const subtitleBgOpacity = ref(0.75)
@@ -1254,15 +1266,17 @@ export default defineComponent({
         const embedUrl = computed(() => {
             const id = String(props.mediaId)
             const src = embedSources.find(s => s.id === activeEmbedId.value) || embedSources[0]
-            return src.build(props.mediaType, id, props.season || 1, props.episode || 1)
+            const targetType = (props.mediaType === 'anime' ? 'tv' : props.mediaType) as 'movie' | 'tv'
+            return src.build(targetType, id, props.season || 1, props.episode || 1)
         })
         const embedUrls = computed<Record<string, string>>(() => {
             const map: Record<string, string> = {}
             const id = String(props.mediaId)
             if (!id) return map
+            const targetType = (props.mediaType === 'anime' ? 'tv' : props.mediaType) as 'movie' | 'tv'
             for (const src of embedSources) {
                 if (!src.enabled || src.id === 'native') continue
-                map[src.id] = src.build(props.mediaType, id, props.season || 1, props.episode || 1)
+                map[src.id] = src.build(targetType, id, props.season || 1, props.episode || 1)
             }
             return map
         })
@@ -2867,11 +2881,13 @@ export default defineComponent({
 
             try {
                 const id = String(props.mediaId)
+                const isAnime = (props.mediaType as string) === 'anime' || Boolean(props.title && /anime/i.test(props.title))
                 const query = new URLSearchParams({
                     server: serverId,
                     tmdbId: id,
-                    type: props.mediaType === 'tv' ? 'tv' : 'movie',
+                    type: isAnime ? 'anime' : (props.mediaType === 'tv' ? 'tv' : 'movie'),
                     title: props.title || '',
+                    audio: currentAudioMode.value || 'sub',
                 })
                 if (props.season > 0) query.set('season', String(props.season))
                 if (props.episode > 0) query.set('episode', String(props.episode))
@@ -3417,7 +3433,7 @@ export default defineComponent({
             }
         })
 
-        return { rootRef, videoRef, qualityRootRef, loading, error, activeProviderName, activeProviderStatus, providers, streams, uniqueQualities, selectedQualityIndex, activeQualityLabel, hlsQualities, hlsQualityLabel, selectedHlsQuality, qualityOpen, buffering, seeking, retry, selectQuality, settingsOpen, settingsSection, selectedServer, availableServers, audioTracks, selectedAudioTrack, currentAudioLabel, subtitleTracks, selectedSubtitleTrack, currentSubtitleLabel, osSubActive, selectServer, selectAudioTrack, selectSubtitleTrack, toggleSubtitles, selectHlsQuality, playing, currentTime, duration, muted, playbackSpeed, isPiP, isFullscreen, playbackStarted, PLAYBACK_SPEEDS, togglePlay, toggleMute, toggleFullscreen, formatTime, seek, seekBy, setPlaybackSpeed, togglePiP, handleCastToTV, handleDownloadMedia, loadOpenSubtitles, controlsHidden, isHoveringControls, resetIdleTimer, subtitleDelay, subtitleBgOpacity, subtitleTextOpacity, subtitleFontSize, subtitlePosition, changeSubtitleDelay, resetSubtitleDelay, brandText, moveSubtitles, volumeSliderOpen, volume, onVolumeChange, handleVolumeButtonClick, activeCueText, activeCueTextFormatted, embedOpen, embedUrl, toggleEmbedMode, paneSrc, embedLoading, onEmbedLoaded, embedSources, activeEmbedId, switchEmbed, handleMouseLeave, embedSourcesIdle, mobileServersOpen, activeServerLabel, toggleMobileServers, selectMobileServer }
+        return { rootRef, videoRef, qualityRootRef, loading, error, activeProviderName, activeProviderStatus, providers, streams, uniqueQualities, selectedQualityIndex, activeQualityLabel, hlsQualities, hlsQualityLabel, selectedHlsQuality, qualityOpen, buffering, seeking, retry, selectQuality, settingsOpen, settingsSection, selectedServer, availableServers, audioTracks, selectedAudioTrack, currentAudioLabel, subtitleTracks, selectedSubtitleTrack, currentSubtitleLabel, osSubActive, selectServer, selectAudioTrack, selectSubtitleTrack, toggleSubtitles, selectHlsQuality, playing, currentTime, duration, muted, playbackSpeed, isPiP, isFullscreen, playbackStarted, PLAYBACK_SPEEDS, togglePlay, toggleMute, toggleFullscreen, formatTime, seek, seekBy, setPlaybackSpeed, togglePiP, handleCastToTV, handleDownloadMedia, loadOpenSubtitles, controlsHidden, isHoveringControls, resetIdleTimer, subtitleDelay, subtitleBgOpacity, subtitleTextOpacity, subtitleFontSize, subtitlePosition, changeSubtitleDelay, resetSubtitleDelay, brandText, moveSubtitles, volumeSliderOpen, volume, onVolumeChange, handleVolumeButtonClick, activeCueText, activeCueTextFormatted, embedOpen, embedUrl, toggleEmbedMode, paneSrc, embedLoading, onEmbedLoaded, embedSources, activeEmbedId, switchEmbed, handleMouseLeave, embedSourcesIdle, mobileServersOpen, activeServerLabel, toggleMobileServers, selectMobileServer, changeAudioMode, currentAudioMode }
     },
 })
 </script>
