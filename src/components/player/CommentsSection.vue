@@ -221,7 +221,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref, watch, computed, nextTick } from 'vue';
 import { getSyncClient } from '../../lib/syncClient';
-import { isToxic } from '../../composables/useToxicityFilter';
+import { isToxic } from '@/composables/core/useToxicityFilter';
 
 interface Comment {
     id: number;

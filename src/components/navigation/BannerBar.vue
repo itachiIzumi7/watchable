@@ -23,7 +23,7 @@
 
 <script lang="ts" setup>
 import { computed, onMounted } from 'vue'
-import { useBanner } from '../../composables/useBanner'
+import { useBanner } from '@/composables/ui/useBanner'
 
 const { activeBanner, fetchActiveBanner } = useBanner()
 

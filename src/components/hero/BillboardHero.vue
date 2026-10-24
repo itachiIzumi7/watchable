@@ -163,10 +163,10 @@ import {
 } from '../../utils/useWebImage';
 import TrailerControls from './TrailerControls.vue';
 import TrailerIframe from './TrailerIframe.vue';
-import { genreName, primeGenres } from '../../composables/useGenreLookup';
-import { useAmbientColor } from '../../composables/useAmbientColor';
-import { useTrailerEmbed } from '../../composables/useTrailerEmbed';
-import { useAppPaths } from '../../composables/useAppPaths';
+import { genreName, primeGenres } from '@/composables/media/useGenreLookup';
+import { useAmbientColor } from '@/composables/ui/useAmbientColor';
+import { useTrailerEmbed } from '@/composables/media/useTrailerEmbed';
+import { useAppPaths } from '@/composables/ui/useAppPaths';
 import { useWebImage } from '../../utils/useWebImage';
 import { buildPartyHref } from '../../utils/partyRoom';
 

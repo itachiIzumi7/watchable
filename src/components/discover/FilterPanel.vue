@@ -159,7 +159,7 @@ import { computed, defineComponent, PropType, ref } from 'vue';
 import GenreChips from './GenreChips.vue';
 import YearRangeSlider from './YearRangeSlider.vue';
 import LmChip from '../primitives/Chip.vue';
-import type { Genre } from '../../composables/useGenreLookup';
+import type { Genre } from '@/composables/media/useGenreLookup';
 
 export type MediaKind = 'movie' | 'tv';
 

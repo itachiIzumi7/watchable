@@ -826,7 +826,7 @@
 <script lang="ts" setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { getSyncClient } from '../lib/syncClient'
-import { setServerOrder, fetchServerOrder } from '../composables/useStream'
+import { setServerOrder, fetchServerOrder } from '@/composables/streaming/useStream'
 
 let sync: any = null
 const DEFAULT_PASSCODE = 'admin123'

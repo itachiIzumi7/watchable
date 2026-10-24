@@ -167,17 +167,17 @@ import {
     TVShowDetails,
     Episode,
     TVShowSeasonDetails
-} from '../composables/useTvShows';
+} from '@/composables/media/useTvShows';
 import {
     currentStreamData,
     getPreferredStreamData,
     savePreferredServer,
     saveLastWatchedMetaData
-} from '../composables/useStream';
-import { getResumeTimestamp } from '../composables/useProgress';
-import { isInWatchlist, toggleWatchlistItem, type WatchlistItem } from '../composables/useWatchlist';
+} from '@/composables/streaming/useStream';
+import { getResumeTimestamp } from '@/composables/user/useProgress';
+import { isInWatchlist, toggleWatchlistItem, type WatchlistItem } from '@/composables/user/useWatchlist';
 
-import { useAppPaths } from '../composables/useAppPaths';
+import { useAppPaths } from '@/composables/ui/useAppPaths';
 import { useWebImage } from '../utils/useWebImage';
 
 import MoovieFrame from '../components/player/MoovieFrame.vue';

@@ -255,13 +255,13 @@ import {
     useWatchlist,
     MAIN_WATCHLIST_ID,
     WatchlistItem
-} from '../composables/useWatchlist';
+} from '@/composables/user/useWatchlist';
 import { getCurrentUser } from '../lib/auth';
-import { useToast } from '../composables/useToast';
+import { useToast } from '@/composables/ui/useToast';
 import {
     getCachedAnimeTmdbArtwork,
     resolveAnimeTmdbPosterBatch
-} from '../composables/useAnimeTmdbArtwork';
+} from '@/composables/media/useAnimeTmdbArtwork';
 
 type FilterKey = 'all' | 'movie' | 'tv' | 'watched' | 'unwatched';
 type SortKey = 'recent' | 'title' | 'rating' | 'unwatched';

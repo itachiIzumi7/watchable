@@ -92,7 +92,7 @@
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue';
 import LmButton from '../primitives/Button.vue';
-import { useAppPaths } from '../../composables/useAppPaths';
+import { useAppPaths } from '@/composables/ui/useAppPaths';
 import { useWebImage } from '../../utils/useWebImage';
 import { buildPartyHref } from '../../utils/partyRoom';
 

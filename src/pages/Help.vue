@@ -140,7 +140,7 @@
 import { defineComponent, onMounted } from 'vue';
 import SiteHeader from '../components/navigation/SiteHeader.vue';
 import SiteFooter from '../components/navigation/SiteFooter.vue';
-import { useSeo } from '../composables/useSeo';
+import { useSeo } from '@/composables/core/useSeo';
 
 export default defineComponent({
     name: 'Help',

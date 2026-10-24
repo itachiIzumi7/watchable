@@ -115,9 +115,9 @@ import { debounce } from '../utils/memoization';
 import SiteHeader from '../components/navigation/SiteHeader.vue';
 import SiteFooter from '../components/navigation/SiteFooter.vue';
 import PersonCard from '../components/cards/PersonCard.vue';
-import { useActor, Actor } from '../composables/useActor';
-import { addSearchTerm } from '../composables/useHistory';
-import { useInfiniteScroll } from '../composables/useLazyLoad';
+import { useActor, Actor } from '@/composables/media/useActor';
+import { addSearchTerm } from '@/composables/user/useHistory';
+import { useInfiniteScroll } from '@/composables/ui/useLazyLoad';
 
 export default defineComponent({
     name: 'Actors',

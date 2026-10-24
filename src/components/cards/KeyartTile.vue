@@ -46,8 +46,8 @@
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue';
 import { useWebImage } from '../../utils/useWebImage';
-import { useAppPaths } from '../../composables/useAppPaths';
-import { useRoutePrefetch } from '../../composables/useRoutePrefetch';
+import { useAppPaths } from '@/composables/ui/useAppPaths';
+import { useRoutePrefetch } from '@/composables/streaming/useRoutePrefetch';
 
 type MediaType = 'movie' | 'tv';
 

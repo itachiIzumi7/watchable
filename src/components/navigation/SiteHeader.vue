@@ -260,12 +260,12 @@ import SettingsModal from './SettingsModal.vue';
 import NotificationBell from './NotificationBell.vue';
 import AndroidIcon from '../svg/logo/android.vue';
 
-import { useAndroidApp } from '../../composables/useAndroidApp';
-import { openPalette } from '../../composables/useCommandPalette';
+import { useAndroidApp } from '@/composables/ui/useAndroidApp';
+import { openPalette } from '@/composables/ui/useCommandPalette';
 import { getCurrentUser, logoutUser } from '../../lib/auth';
-import { getSettings, REGIONS } from '../../composables/useSettings';
-import { prefetchPopularActors } from '../../composables/useActorsPrefetch';
-import { useNotifications } from '../../composables/useNotifications';
+import { getSettings, REGIONS } from '@/composables/user/useSettings';
+import { prefetchPopularActors } from '@/composables/media/useActorsPrefetch';
+import { useNotifications } from '@/composables/user/useNotifications';
 
 interface NavItem {
     label: string;

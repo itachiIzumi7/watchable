@@ -1,8 +1,8 @@
 import empty_movie_state from '../assets/img/empty-movie-state.png';
-import { Movie } from '../composables/useHighlights';
-import { MovieDetails } from '../composables/useMovies';
-import { TVShowDetails } from '../composables/useTvShows';
-import { getSettings } from '../composables/useSettings';
+import { Movie } from '@/composables/media/useHighlights';
+import { MovieDetails } from '@/composables/media/useMovies';
+import { TVShowDetails } from '@/composables/media/useTvShows';
+import { getSettings } from '@/composables/user/useSettings';
 
 // TMDB posters/backdrops load directly from TMDB's CDN (no VPS proxy hop).
 const TMDB_BASE = 'https://image.tmdb.org/t/p/';

@@ -270,16 +270,16 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useAniList } from '../composables/useAniList';
-import { saveProgress } from '../composables/useProgress';
-import { addViewedItem } from '../composables/useHistory';
-import { animeServers } from '../composables/useStream';
-import { Episode } from '../composables/useTvShows';
+import { useAniList } from '@/composables/media/useAniList';
+import { saveProgress } from '@/composables/user/useProgress';
+import { addViewedItem } from '@/composables/user/useHistory';
+import { animeServers } from '@/composables/streaming/useStream';
+import { Episode } from '@/composables/media/useTvShows';
 import MoovieFrame from '../components/player/MoovieFrame.vue';
 import ServerAccordion from '../components/player/ServerAccordion.vue';
 import UpNextDrawer from '../components/player/UpNextDrawer.vue';
-import { useAppPaths } from '../composables/useAppPaths';
-import { isInWatchlist, toggleWatchlistItem, type WatchlistItem } from '../composables/useWatchlist';
+import { useAppPaths } from '@/composables/ui/useAppPaths';
+import { isInWatchlist, toggleWatchlistItem, type WatchlistItem } from '@/composables/user/useWatchlist';
 import CommentsSection from '../components/player/CommentsSection.vue';
 import EpisodeNavigator from '../components/player/EpisodeNavigator.vue';
 import {
@@ -302,7 +302,7 @@ import {
     type AnimeTmdbArtwork,
     type AnimeTmdbEpisode,
     type TmdbAnimeShowDetails
-} from '../composables/useAnimeTmdbArtwork';
+} from '@/composables/media/useAnimeTmdbArtwork';
 import { useWebImage } from '../utils/useWebImage';
 import { buildStreamPartyHref } from '../utils/partyRoom';
 

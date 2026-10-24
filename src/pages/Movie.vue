@@ -71,11 +71,11 @@ import DropCapSynopsis from '../components/detail/DropCapSynopsis.vue';
 import StatsBlock, { StatEntry } from '../components/detail/StatsBlock.vue';
 import CastGrid from '../components/detail/CastGrid.vue';
 import CommentsSection from '../components/player/CommentsSection.vue';
-import { useMovies, MovieDetails, Cast, Crew } from '../composables/useMovies';
-import { useSeo } from '../composables/useSeo';
-import { addViewedItem } from '../composables/useHistory';
-import { getLastWatchedMetaData } from '../composables/useStream';
-import { primeGenres } from '../composables/useGenreLookup';
+import { useMovies, MovieDetails, Cast, Crew } from '@/composables/media/useMovies';
+import { useSeo } from '@/composables/core/useSeo';
+import { addViewedItem } from '@/composables/user/useHistory';
+import { getLastWatchedMetaData } from '@/composables/streaming/useStream';
+import { primeGenres } from '@/composables/media/useGenreLookup';
 import { buildProxiedImageUrl } from '../utils/useWebImage';
 import { displayMovieStatus, releaseDateMetaLabel } from '../utils/releaseStatus';
 

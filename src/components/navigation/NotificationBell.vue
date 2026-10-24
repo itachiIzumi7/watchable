@@ -204,9 +204,9 @@
 
 <script lang="ts" setup>
 import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
-import { useNotifications } from '../../composables/useNotifications'
-import { usePolls } from '../../composables/usePolls'
-import { useSuggestions } from '../../composables/useSuggestions'
+import { useNotifications } from '@/composables/user/useNotifications'
+import { usePolls } from '@/composables/core/usePolls'
+import { useSuggestions } from '@/composables/core/useSuggestions'
 
 const { notifications, unreadCount, fetchNotifications, markAsRead, markAllAsRead } = useNotifications()
 const { activePoll, pollResults, totalVotes, allPolls, fetchActivePoll, fetchAllPolls, vote, hasVoted, voting } = usePolls()

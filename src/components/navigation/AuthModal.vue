@@ -122,7 +122,7 @@
 <script lang="ts">
 import { defineComponent, ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { loginUser, registerUser, setPasswordUser } from '../../lib/auth';
-import { useActiveVehicle } from '../../composables/useActiveVehicle';
+import { useActiveVehicle } from '@/composables/ui/useActiveVehicle';
 
 interface Particle {
     x: number;

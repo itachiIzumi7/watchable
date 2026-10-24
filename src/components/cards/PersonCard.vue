@@ -49,8 +49,8 @@
 <script lang="ts">
 import { computed, defineComponent, PropType, ref, watch } from 'vue';
 import { useWebImage } from '../../utils/useWebImage';
-import { useAppPaths } from '../../composables/useAppPaths';
-import { prefetchActorProfile } from '../../composables/useActorsPrefetch';
+import { useAppPaths } from '@/composables/ui/useAppPaths';
+import { prefetchActorProfile } from '@/composables/media/useActorsPrefetch';
 
 export default defineComponent({
     name: 'PersonCard',

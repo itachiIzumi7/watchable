@@ -111,8 +111,8 @@ import {
     fetchIptvPlaylist,
     type IptvChannel,
     type IptvCountry
-} from '../composables/useIptv';
-import { useLiveTvPlayer } from '../composables/useLiveTvPlayer';
+} from '@/composables/streaming/useIptv';
+import { useLiveTvPlayer } from '@/composables/streaming/useLiveTvPlayer';
 
 const countries = ref<IptvCountry[]>([]);
 const channels = ref<IptvChannel[]>([]);

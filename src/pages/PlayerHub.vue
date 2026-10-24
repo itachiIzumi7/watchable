@@ -141,8 +141,8 @@
 import { defineComponent, onUnmounted, ref } from 'vue'
 import Plyr from 'plyr'
 import 'plyr/dist/plyr.css'
-import { useHubScraper, type HubStream } from '../composables/useHubScraper'
-import { usePlaybackRoute } from '../composables/usePlaybackRoute'
+import { useHubScraper, type HubStream } from '@/composables/streaming/useHubScraper'
+import { usePlaybackRoute } from '@/composables/streaming/usePlaybackRoute'
 import { getSyncClient } from '../lib/syncClient'
 
 export default defineComponent({

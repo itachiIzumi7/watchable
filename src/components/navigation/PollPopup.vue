@@ -32,7 +32,7 @@
 <script lang="ts" setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { usePolls } from '../../composables/usePolls'
+import { usePolls } from '@/composables/core/usePolls'
 
 const { activePoll, voting, fetchActivePoll, vote, hasVoted, hasDismissed, dismissPoll } = usePolls()
 

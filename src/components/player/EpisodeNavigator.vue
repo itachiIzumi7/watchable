@@ -92,8 +92,8 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, onUnmounted, PropType, ref, watch } from 'vue';
 import { useWebImage } from '../../utils/useWebImage';
-import { getProgressPercent } from '../../composables/useProgress';
-import { Episode, TVShowSeasonDetails } from '../../composables/useTvShows';
+import { getProgressPercent } from '@/composables/user/useProgress';
+import { Episode, TVShowSeasonDetails } from '@/composables/media/useTvShows';
 
 type SeasonRef = Pick<TVShowSeasonDetails, 'id' | 'season_number'> & {
     episode_count?: number;

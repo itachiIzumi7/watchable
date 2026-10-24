@@ -304,25 +304,25 @@ import SiteHeader from '../components/navigation/SiteHeader.vue';
 import SiteFooter from '../components/navigation/SiteFooter.vue';
 import TrailerDialog from '../components/detail/TrailerDialog.vue';
 import LmTabs, { type TabDef } from '../components/primitives/Tabs.vue';
-import useAxios from '../composables/useAxios';
-import { getSettings } from '../composables/useSettings';
-import { useSeo } from '../composables/useSeo';
-import { useInfiniteScroll } from '../composables/useLazyLoad';
-import { fetchTrailerVideos, type TrailerVideo } from '../composables/useTrailer';
+import useAxios from '@/composables/core/useAxios';
+import { getSettings } from '@/composables/user/useSettings';
+import { useSeo } from '@/composables/core/useSeo';
+import { useInfiniteScroll } from '@/composables/ui/useLazyLoad';
+import { fetchTrailerVideos, type TrailerVideo } from '@/composables/media/useTrailer';
 import {
     queryAniListApi,
     type AniListFuzzyDate,
     type AniListMediaTrailer,
     type AnimeMedia,
     type AnimeResponse
-} from '../composables/useAniList';
+} from '@/composables/media/useAniList';
 import {
     getCachedAnimeTmdbArtwork,
     resolveAnimeTmdbPosterBatch
-} from '../composables/useAnimeTmdbArtwork';
+} from '@/composables/media/useAnimeTmdbArtwork';
 import { useWebImage } from '../utils/useWebImage';
-import type { Movie } from '../composables/useHighlights';
-import type { MovieResponse } from '../composables/useMovies';
+import type { Movie } from '@/composables/media/useHighlights';
+import type { MovieResponse } from '@/composables/media/useMovies';
 
 interface UpcomingEntry extends Movie {
     trailers: TrailerVideo[];

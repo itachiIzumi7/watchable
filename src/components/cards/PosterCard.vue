@@ -91,14 +91,14 @@
 <script lang="ts">
 import { computed, defineComponent, nextTick, onBeforeUnmount, PropType, ref, watch } from 'vue';
 import { useWebImage } from '../../utils/useWebImage';
-import { genreName } from '../../composables/useGenreLookup';
-import { isInWatchlist, toggleWatchlistItem } from '../../composables/useWatchlist';
+import { genreName } from '@/composables/media/useGenreLookup';
+import { isInWatchlist, toggleWatchlistItem } from '@/composables/user/useWatchlist';
 import { useRouter } from 'vue-router';
-import { useAppPaths } from '../../composables/useAppPaths';
+import { useAppPaths } from '@/composables/ui/useAppPaths';
 
 
-import { prefetchAnimeTmdbArtwork } from '../../composables/useAnimeTmdbArtwork';
-import { prefetchResolvedRoute } from '../../composables/useRoutePrefetch';
+import { prefetchAnimeTmdbArtwork } from '@/composables/media/useAnimeTmdbArtwork';
+import { prefetchResolvedRoute } from '@/composables/streaming/useRoutePrefetch';
 
 
 type MediaType = 'movie' | 'tv' | 'anime';

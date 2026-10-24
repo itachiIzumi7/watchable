@@ -64,8 +64,8 @@
 
 <script lang="ts">
 import { defineComponent, ref, watch } from 'vue';
-import { getSettings, REGIONS } from '../../composables/useSettings';
-import { usePlaybackRoute } from '../../composables/usePlaybackRoute';
+import { getSettings, REGIONS } from '@/composables/user/useSettings';
+import { usePlaybackRoute } from '@/composables/streaming/usePlaybackRoute';
 
 export default defineComponent({
     name: 'SettingsModal',

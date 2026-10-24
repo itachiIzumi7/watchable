@@ -118,11 +118,11 @@
 <script lang="ts">
 import { computed, defineComponent, nextTick, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { paletteOpen, closePalette } from '../../composables/useCommandPalette';
+import { paletteOpen, closePalette } from '@/composables/ui/useCommandPalette';
 import {
     searchHistory,
     addSearchTerm
-} from '../../composables/useHistory';
+} from '@/composables/user/useHistory';
 
 interface JumpItem {
     label: string;

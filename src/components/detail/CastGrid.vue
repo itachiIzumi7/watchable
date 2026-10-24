@@ -30,7 +30,7 @@
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue';
 import PersonCard from '../cards/PersonCard.vue';
-import type { Cast } from '../../composables/useMovies';
+import type { Cast } from '@/composables/media/useMovies';
 
 export default defineComponent({
     name: 'CastGrid',

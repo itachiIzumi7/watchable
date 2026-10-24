@@ -133,7 +133,7 @@
 <script lang="ts">
 import { computed, defineComponent, nextTick, PropType, ref, watch } from 'vue';
 import LmDialog from '../primitives/Dialog.vue';
-import { buildTrailerEmbed, type TrailerVideo } from '../../composables/useTrailer';
+import { buildTrailerEmbed, type TrailerVideo } from '@/composables/media/useTrailer';
 
 export default defineComponent({
     name: 'TrailerDialog',

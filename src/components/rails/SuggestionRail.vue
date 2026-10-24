@@ -51,7 +51,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
-import type { GeminiSuggestion } from '../../composables/useGemini'
+import type { GeminiSuggestion } from '@/composables/core/useGemini'
 
 export default defineComponent({
     name: 'SuggestionRail',

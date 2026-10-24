@@ -130,7 +130,7 @@ import SiteHeader from '../components/navigation/SiteHeader.vue';
 import SiteFooter from '../components/navigation/SiteFooter.vue';
 import PosterCard from '../components/cards/PosterCard.vue';
 import AnimeFilterPanel, { AnimeFilters } from '../components/discover/AnimeFilterPanel.vue';
-import { useAniList, AnimeMedia } from '../composables/useAniList';
+import { useAniList, AnimeMedia } from '@/composables/media/useAniList';
 
 const ANIME_GENRES = [
     'Action', 'Adventure', 'Comedy', 'Drama', 'Ecchi', 'Fantasy',

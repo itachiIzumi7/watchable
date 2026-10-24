@@ -82,12 +82,12 @@ import DropCapSynopsis from '../components/detail/DropCapSynopsis.vue';
 import StatsBlock, { StatEntry } from '../components/detail/StatsBlock.vue';
 import CastGrid from '../components/detail/CastGrid.vue';
 import SeasonTabs from '../components/detail/SeasonTabs.vue';
-import { useTvShows, TVShowDetails } from '../composables/useTvShows';
-import { Cast, Crew } from '../composables/useMovies';
-import { useSeo } from '../composables/useSeo';
-import { addViewedItem } from '../composables/useHistory';
-import { getLastWatchedMetaData } from '../composables/useStream';
-import { primeGenres } from '../composables/useGenreLookup';
+import { useTvShows, TVShowDetails } from '@/composables/media/useTvShows';
+import { Cast, Crew } from '@/composables/media/useMovies';
+import { useSeo } from '@/composables/core/useSeo';
+import { addViewedItem } from '@/composables/user/useHistory';
+import { getLastWatchedMetaData } from '@/composables/streaming/useStream';
+import { primeGenres } from '@/composables/media/useGenreLookup';
 import { buildProxiedImageUrl } from '../utils/useWebImage';
 import { displayTvStatus, premiereMetaLabel } from '../utils/releaseStatus';
 

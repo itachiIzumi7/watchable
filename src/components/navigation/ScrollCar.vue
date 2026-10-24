@@ -7,7 +7,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, onBeforeUnmount, watch } from 'vue';
-import { useActiveVehicle } from '../../composables/useActiveVehicle';
+import { useActiveVehicle } from '@/composables/ui/useActiveVehicle';
 
 interface Spark {
     x: number;

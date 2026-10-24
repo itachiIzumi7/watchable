@@ -329,13 +329,13 @@ import { useRouter } from 'vue-router';
 import LmButton from '../primitives/Button.vue';
 import TrailerControls from '../hero/TrailerControls.vue';
 import TrailerIframe from '../hero/TrailerIframe.vue';
-import { useAmbientColor } from '../../composables/useAmbientColor';
-import { useTrailerEmbed } from '../../composables/useTrailerEmbed';
-import { warmMooviePlayerAssets } from '../../composables/useMooviePlayer';
+import { useAmbientColor } from '@/composables/ui/useAmbientColor';
+import { useTrailerEmbed } from '@/composables/media/useTrailerEmbed';
+import { warmMooviePlayerAssets } from '@/composables/streaming/useMooviePlayer';
 import { catalogDisplayImageSize, useWebImage } from '../../utils/useWebImage';
 import { buildPartyHref } from '../../utils/partyRoom';
-import { logDownload } from '../../composables/useDownloadTracking';
-import { isInWatchlist, toggleWatchlistItem, type WatchlistItem } from '../../composables/useWatchlist';
+import { logDownload } from '@/composables/core/useDownloadTracking';
+import { isInWatchlist, toggleWatchlistItem, type WatchlistItem } from '@/composables/user/useWatchlist';
 
 export default defineComponent({
     name: 'TitleMasthead',

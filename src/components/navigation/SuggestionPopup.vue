@@ -51,7 +51,7 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
-import { useSuggestions } from '../../composables/useSuggestions'
+import { useSuggestions } from '@/composables/core/useSuggestions'
 
 const { activeSuggestion, submitting, fetchActiveSuggestion, submitResponse, hasSubmitted, hasDismissed, dismiss } = useSuggestions()
 

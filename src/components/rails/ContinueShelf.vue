@@ -56,11 +56,11 @@
 <script lang="ts">
 import { computed, defineComponent } from 'vue';
 import LmRail from './Rail.vue';
-import { viewHistory } from '../../composables/useHistory';
-import { streamData } from '../../composables/useStream';
-import { getProgressPercent } from '../../composables/useProgress';
+import { viewHistory } from '@/composables/user/useHistory';
+import { streamData } from '@/composables/streaming/useStream';
+import { getProgressPercent } from '@/composables/user/useProgress';
 import { useWebImage } from '../../utils/useWebImage';
-import { getCachedAnimeTmdbArtwork, resolveAnimeTmdbMetaByTmdbId } from '../../composables/useAnimeTmdbArtwork';
+import { getCachedAnimeTmdbArtwork, resolveAnimeTmdbMetaByTmdbId } from '@/composables/media/useAnimeTmdbArtwork';
 
 interface Entry {
     id: number | string;

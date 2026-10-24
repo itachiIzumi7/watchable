@@ -11,8 +11,8 @@ const Actor = () => import('../pages/Actor.vue')
 const StreamMovie = () => import('../pages/StreamMovie.vue')
 const StreamTVShow = () => import('../pages/StreamTVShow.vue')
 const StreamAnime = () => import('../pages/StreamAnime.vue')
-import { useSeo } from '../composables/useSeo'
-import { recordDetailReturnPath } from '../composables/useDetailBackNavigation'
+import { useSeo } from '@/composables/core/useSeo'
+import { recordDetailReturnPath } from '@/composables/ui/useDetailBackNavigation'
 
 declare module 'vue-router' {
     interface RouteMeta {
@@ -350,7 +350,7 @@ router.afterEach((to) => {
         } catch (e) {}
     }
 
-    import('../composables/useBotProtection').then(({ reevaluateBotProtection }) => {
+    import('@/composables/core/useBotProtection').then(({ reevaluateBotProtection }) => {
         reevaluateBotProtection();
     });
 

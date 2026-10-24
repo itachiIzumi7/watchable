@@ -443,13 +443,13 @@ import { defineComponent, onMounted, onBeforeUnmount, ref, computed, nextTick } 
 import SiteHeader from '../components/navigation/SiteHeader.vue';
 import AuthModal from '../components/navigation/AuthModal.vue';
 import { getSyncClient } from '../lib/syncClient';
-import { useSeo } from '../composables/useSeo';
-import { useMovies } from '../composables/useMovies';
-import { useTvShows } from '../composables/useTvShows';
-import { useAniList } from '../composables/useAniList';
-import { resolveAnimeTmdbMetaByTmdbId, getAnilistIdForTmdbId } from '../composables/useAnimeTmdbArtwork';
-import { consumeLoungeFeed, consumeReviewsFeed, resetDiscussFeedCache } from '../composables/useDiscussPrefetch';
-import { isToxic } from '../composables/useToxicityFilter';
+import { useSeo } from '@/composables/core/useSeo';
+import { useMovies } from '@/composables/media/useMovies';
+import { useTvShows } from '@/composables/media/useTvShows';
+import { useAniList } from '@/composables/media/useAniList';
+import { resolveAnimeTmdbMetaByTmdbId, getAnilistIdForTmdbId } from '@/composables/media/useAnimeTmdbArtwork';
+import { consumeLoungeFeed, consumeReviewsFeed, resetDiscussFeedCache } from '@/composables/core/useDiscussPrefetch';
+import { isToxic } from '@/composables/core/useToxicityFilter';
 
 interface Comment {
     id: string;

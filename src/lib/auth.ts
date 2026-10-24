@@ -1,4 +1,4 @@
-import { createDefaultCollection, normalizeWatchlistStorage } from '../composables/useWatchlist';
+import { createDefaultCollection, normalizeWatchlistStorage } from '@/composables/user/useWatchlist';
 
 export interface UserAccount {
     username: string;

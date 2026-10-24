@@ -35,7 +35,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, onBeforeUnmount } from 'vue';
-import { useToast } from '../../composables/useToast';
+import { useToast } from '@/composables/ui/useToast';
 import CheckCircleIcon from '../svg/outline/check-circle.vue';
 import AlertTriangleIcon from '../svg/outline/alert-triangle.vue';
 import InfoIcon from '../svg/outline/info.vue';

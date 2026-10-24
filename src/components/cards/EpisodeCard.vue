@@ -56,7 +56,7 @@
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue';
 import { useWebImage } from '../../utils/useWebImage';
-import { useRoutePrefetch } from '../../composables/useRoutePrefetch';
+import { useRoutePrefetch } from '@/composables/streaming/useRoutePrefetch';
 
 export default defineComponent({
     name: 'EpisodeCard',

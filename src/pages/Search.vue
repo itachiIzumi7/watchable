@@ -387,9 +387,9 @@ import {
     animeMeta,
     upcomingMoviesMeta,
     upcomingAnimeMeta
-} from '../composables/useSearch';
-import type { AnimeMedia } from '../composables/useAniList';
-import { addSearchTerm, searchHistory } from '../composables/useHistory';
+} from '@/composables/media/useSearch';
+import type { AnimeMedia } from '@/composables/media/useAniList';
+import { addSearchTerm, searchHistory } from '@/composables/user/useHistory';
 
 const TAB_KEYS = ['all', 'movies', 'shows', 'people', 'anime', 'upcoming'] as const;
 type TabKey = typeof TAB_KEYS[number];

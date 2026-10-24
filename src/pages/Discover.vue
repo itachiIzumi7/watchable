@@ -263,7 +263,7 @@ import { useRouter } from 'vue-router';
 import SiteHeader from '../components/navigation/SiteHeader.vue';
 import SiteFooter from '../components/navigation/SiteFooter.vue';
 import PosterCard from '../components/cards/PosterCard.vue';
-import { useGemini } from '../composables/useGemini';
+import { useGemini } from '@/composables/core/useGemini';
 
 interface SortOption {
     key: string;

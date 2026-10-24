@@ -96,16 +96,16 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useMovies, MovieDetails } from '../composables/useMovies';
+import { useMovies, MovieDetails } from '@/composables/media/useMovies';
 import {
     currentStreamData,
     getPreferredStreamData,
     savePreferredServer
-} from '../composables/useStream';
-import { getResumeTimestamp } from '../composables/useProgress';
-import { isInWatchlist, toggleWatchlistItem, type WatchlistItem } from '../composables/useWatchlist';
+} from '@/composables/streaming/useStream';
+import { getResumeTimestamp } from '@/composables/user/useProgress';
+import { isInWatchlist, toggleWatchlistItem, type WatchlistItem } from '@/composables/user/useWatchlist';
 
-import { useAppPaths } from '../composables/useAppPaths';
+import { useAppPaths } from '@/composables/ui/useAppPaths';
 
 import MoovieFrame from '../components/player/MoovieFrame.vue';
 import CommentsSection from '../components/player/CommentsSection.vue';

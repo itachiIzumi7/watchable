@@ -310,13 +310,13 @@
 import { computed, onMounted, ref } from 'vue';
 import SiteHeader from '../components/navigation/SiteHeader.vue';
 import SiteFooter from '../components/navigation/SiteFooter.vue';
-import { getSettings, REGIONS } from '../composables/useSettings';
-import { usePlaybackRoute, type PlaybackRoute } from '../composables/usePlaybackRoute';
+import { getSettings, REGIONS } from '@/composables/user/useSettings';
+import { usePlaybackRoute, type PlaybackRoute } from '@/composables/streaming/usePlaybackRoute';
 import { getCurrentUser, logoutUser } from '../lib/auth';
-import { useSeo } from '../composables/useSeo';
-import { useToast } from '../composables/useToast';
+import { useSeo } from '@/composables/core/useSeo';
+import { useToast } from '@/composables/ui/useToast';
 import AndroidIcon from '../components/svg/logo/android.vue';
-import { useAndroidApp } from '../composables/useAndroidApp';
+import { useAndroidApp } from '@/composables/ui/useAndroidApp';
 
 const { updateSeo } = useSeo();
 const { region, language, updateSettings } = getSettings();

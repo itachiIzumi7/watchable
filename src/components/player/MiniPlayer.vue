@@ -59,7 +59,7 @@
 <script lang="ts">
 import { computed, defineComponent, watch, ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useMiniPlayer } from '../../composables/useMiniPlayer';
+import { useMiniPlayer } from '@/composables/streaming/useMiniPlayer';
 
 export default defineComponent({
     name: 'MiniPlayer',

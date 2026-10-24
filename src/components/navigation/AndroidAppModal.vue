@@ -81,7 +81,7 @@
 <script lang="ts">
 import { defineComponent, computed, onMounted, onBeforeUnmount } from 'vue';
 import AndroidIcon from '../svg/logo/android.vue';
-import { useAndroidApp } from '../../composables/useAndroidApp';
+import { useAndroidApp } from '@/composables/ui/useAndroidApp';
 
 export default defineComponent({
     name: 'AndroidAppModal',

@@ -47,7 +47,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, onBeforeUnmount, watch, defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
-import { getSettings, loadGlobalSettings } from './composables/useSettings';
+import { getSettings, loadGlobalSettings } from '@/composables/user/useSettings';
 import { getSyncClient } from './lib/syncClient';
 import { setVpsProxyBaseUrl } from './utils/useWebImage';
 import { triggerAd } from './components/ads/triggerAd';
@@ -55,7 +55,7 @@ import BannerBar from './components/navigation/BannerBar.vue';
 import PollPopup from './components/navigation/PollPopup.vue';
 import SuggestionPopup from './components/navigation/SuggestionPopup.vue';
 import AndroidAppModal from './components/navigation/AndroidAppModal.vue';
-import { useAndroidApp } from './composables/useAndroidApp';
+import { useAndroidApp } from '@/composables/ui/useAndroidApp';
 
 const { isAppEnabled, isAppModalOpen, closeAppModal, initAutoPrompt } = useAndroidApp();
 
@@ -114,10 +114,10 @@ const initIdle = async () => {
         { installAntiInspect, uninstallAntiInspect },
         { installBotProtection, uninstallBotProtection }
     ] = await Promise.all([
-        import('./composables/useCommandPalette'),
-        import('./composables/useReveal'),
-        import('./composables/useAntiInspect'),
-        import('./composables/useBotProtection')
+        import('@/composables/ui/useCommandPalette'),
+        import('@/composables/ui/useReveal'),
+        import('@/composables/core/useAntiInspect'),
+        import('@/composables/core/useBotProtection')
     ]);
 
     bindCommandPaletteHotkey();

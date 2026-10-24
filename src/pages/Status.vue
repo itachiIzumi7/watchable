@@ -83,7 +83,7 @@ import { defineComponent, onMounted, ref } from 'vue';
 import SiteHeader from '../components/navigation/SiteHeader.vue';
 import SiteFooter from '../components/navigation/SiteFooter.vue';
 import { getSyncClient } from '../lib/syncClient';
-import { useSeo } from '../composables/useSeo';
+import { useSeo } from '@/composables/core/useSeo';
 
 interface KeyStat {
     key_index: number;

@@ -97,7 +97,7 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, PropType, ref, watch } from 'vue';
 import LmTabs, { TabDef } from '../primitives/Tabs.vue';
-import { useTvShows, Episode, TVShowDetails } from '../../composables/useTvShows';
+import { useTvShows, Episode, TVShowDetails } from '@/composables/media/useTvShows';
 import { useWebImage } from '../../utils/useWebImage';
 
 export default defineComponent({

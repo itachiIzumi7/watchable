@@ -348,11 +348,11 @@ import { useRoute } from 'vue-router';
 import SiteHeader from '../components/navigation/SiteHeader.vue';
 import SiteFooter from '../components/navigation/SiteFooter.vue';
 import KeyartTile from '../components/cards/KeyartTile.vue';
-import { useActor, ActorDetails, ActorImages } from '../composables/useActor';
+import { useActor, ActorDetails, ActorImages } from '@/composables/media/useActor';
 import { useWebImage, buildProxiedImageUrl } from '../utils/useWebImage';
-import { useToast } from '../composables/useToast';
-import { useAmbientColor } from '../composables/useAmbientColor';
-import { useSeo } from '../composables/useSeo';
+import { useToast } from '@/composables/ui/useToast';
+import { useAmbientColor } from '@/composables/ui/useAmbientColor';
+import { useSeo } from '@/composables/core/useSeo';
 
 
 interface CreditItem {

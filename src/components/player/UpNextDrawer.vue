@@ -149,7 +149,7 @@
 import { computed, defineComponent, onUnmounted, PropType, ref, watch } from 'vue';
 import { useStorage } from '@vueuse/core';
 import { useWebImage } from '../../utils/useWebImage';
-import { Episode } from '../../composables/useTvShows';
+import { Episode } from '@/composables/media/useTvShows';
 import {
     formatEpisodeAirDate,
     isEpisodeNotYetAired,

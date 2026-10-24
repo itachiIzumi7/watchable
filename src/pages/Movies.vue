@@ -134,12 +134,12 @@ import SiteHeader from '../components/navigation/SiteHeader.vue';
 import SiteFooter from '../components/navigation/SiteFooter.vue';
 import FilterPanel, { DiscoverFilters, RuntimeBand } from '../components/discover/FilterPanel.vue';
 import PosterCard from '../components/cards/PosterCard.vue';
-import { useMovies } from '../composables/useMovies';
-import { Movie } from '../composables/useHighlights';
-import { applyGlobalBrowseCuration } from '../composables/useHomepageCuration';
-import { getSettings } from '../composables/useSettings';
-import { addSearchTerm } from '../composables/useHistory';
-import { primeGenres, getGenres, Genre } from '../composables/useGenreLookup';
+import { useMovies } from '@/composables/media/useMovies';
+import { Movie } from '@/composables/media/useHighlights';
+import { applyGlobalBrowseCuration } from '@/composables/media/useHomepageCuration';
+import { getSettings } from '@/composables/user/useSettings';
+import { addSearchTerm } from '@/composables/user/useHistory';
+import { primeGenres, getGenres, Genre } from '@/composables/media/useGenreLookup';
 
 const CURRENT_YEAR = new Date().getFullYear();
 const YEAR_BOUNDS: [number, number] = [1950, CURRENT_YEAR + 2];

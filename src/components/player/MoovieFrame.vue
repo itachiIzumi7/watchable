@@ -552,8 +552,8 @@
 
 <script lang="ts">
 import { computed, defineComponent, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
-import { startProgressTracking } from '../../composables/useProgress'
-import { usePlaybackRoute } from '../../composables/usePlaybackRoute'
+import { startProgressTracking } from '@/composables/user/useProgress'
+import { usePlaybackRoute } from '@/composables/streaming/usePlaybackRoute'
 import { getSyncClient } from '../../lib/syncClient'
 
 const HUB_BASE = ''

@@ -150,9 +150,9 @@ import TitleMasthead from '../components/detail/TitleMasthead.vue';
 import MetaBar, { MetaEntry } from '../components/detail/MetaBar.vue';
 import DropCapSynopsis from '../components/detail/DropCapSynopsis.vue';
 import StatsBlock, { StatEntry } from '../components/detail/StatsBlock.vue';
-import { useAniList } from '../composables/useAniList';
-import { addViewedItem } from '../composables/useHistory';
-import { useSeo } from '../composables/useSeo';
+import { useAniList } from '@/composables/media/useAniList';
+import { addViewedItem } from '@/composables/user/useHistory';
+import { useSeo } from '@/composables/core/useSeo';
 import { prefetchArtworkImages, useWebImage } from '../utils/useWebImage';
 import { displayTvStatus, premiereMetaLabel } from '../utils/releaseStatus';
 import {
@@ -167,7 +167,7 @@ import {
     resolvePreferredTmdbSeason,
     type AnimeTmdbArtwork,
     type TmdbAnimeShowDetails
-} from '../composables/useAnimeTmdbArtwork';
+} from '@/composables/media/useAnimeTmdbArtwork';
 
 
 export default defineComponent({

@@ -13,7 +13,7 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { LocationQuery } from 'vue-router';
-import { useSeo } from '../composables/useSeo';
+import { useSeo } from '@/composables/core/useSeo';
 
 const route = useRoute();
 const router = useRouter();

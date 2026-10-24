@@ -40,7 +40,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
 import LmChip from '../primitives/Chip.vue';
-import type { Genre } from '../../composables/useGenreLookup';
+import type { Genre } from '@/composables/media/useGenreLookup';
 
 export default defineComponent({
     name: 'GenreChips',

@@ -58,7 +58,7 @@
 import { computed, defineComponent, PropType, ref } from 'vue';
 import LmRail from './Rail.vue';
 import { useWebImage } from '../../utils/useWebImage';
-import { useAppPaths } from '../../composables/useAppPaths';
+import { useAppPaths } from '@/composables/ui/useAppPaths';
 
 export interface TopItem {
     id: number | string;

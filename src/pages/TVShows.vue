@@ -133,12 +133,12 @@ import SiteHeader from '../components/navigation/SiteHeader.vue';
 import SiteFooter from '../components/navigation/SiteFooter.vue';
 import FilterPanel, { DiscoverFilters, RuntimeBand } from '../components/discover/FilterPanel.vue';
 import PosterCard from '../components/cards/PosterCard.vue';
-import { useTvShows, TVShowType } from '../composables/useTvShows';
-import { applyGlobalBrowseCuration } from '../composables/useHomepageCuration';
-import { getSettings } from '../composables/useSettings';
-import useAxios from '../composables/useAxios';
-import { addSearchTerm } from '../composables/useHistory';
-import { primeGenres, getGenres, Genre } from '../composables/useGenreLookup';
+import { useTvShows, TVShowType } from '@/composables/media/useTvShows';
+import { applyGlobalBrowseCuration } from '@/composables/media/useHomepageCuration';
+import { getSettings } from '@/composables/user/useSettings';
+import useAxios from '@/composables/core/useAxios';
+import { addSearchTerm } from '@/composables/user/useHistory';
+import { primeGenres, getGenres, Genre } from '@/composables/media/useGenreLookup';
 
 interface TvShowResponse {
     page: number;

@@ -64,8 +64,8 @@ import BillboardHero from '../components/hero/BillboardHero.vue';
 import SpotlightModule from '../components/hero/SpotlightModule.vue';
 import ContinueShelf from '../components/rails/ContinueShelf.vue';
 import CuratedRail from '../components/rails/CuratedRail.vue';
-import { useHighlights, highLightOptions } from '../composables/useHighlights';
-import { primeGenres } from '../composables/useGenreLookup';
+import { useHighlights, highLightOptions } from '@/composables/media/useHighlights';
+import { primeGenres } from '@/composables/media/useGenreLookup';
 
 export default defineComponent({
     name: 'Home',

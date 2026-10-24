@@ -69,7 +69,7 @@
 import { computed, defineComponent, onBeforeUnmount, onMounted, PropType, ref } from 'vue';
 import { useStorage } from '@vueuse/core';
 import LmPill from '../primitives/Pill.vue';
-import { Server } from '../../composables/useStream';
+import { Server } from '@/composables/streaming/useStream';
 
 export default defineComponent({
     name: 'ServerAccordion',
