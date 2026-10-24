@@ -902,62 +902,89 @@ async function handleResolve(searchParams: URLSearchParams) {
   }
 }
 
-export const config = {
-  runtime: "nodejs",
-};
-
 export default async function handler(request: any, response?: any) {
-  if (response && (typeof response.status === "function" || typeof response.setHeader === "function")) {
-    const host = request.headers?.host || "localhost:5173";
-    const fullUrl = new URL(request.url, `http://${host}`);
-    const result = await handleResolve(fullUrl.searchParams);
-    response.setHeader("Content-Type", "application/json");
-    response.setHeader("Access-Control-Allow-Origin", "*");
-    response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-    if (typeof response.status === "function") {
-      return response.status(result.status).json(result.data);
-    } else {
-      response.statusCode = result.status;
-      return response.end(JSON.stringify(result.data));
+  try {
+    // Handle CORS preflight
+    if (request.method === "OPTIONS") {
+      if (response && typeof response.setHeader === "function") {
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "*");
+        response.statusCode = 204;
+        return response.end();
+      }
+      return new Response(null, {
+        status: 204,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, OPTIONS",
+          "Access-Control-Allow-Headers": "*",
+        },
+      });
     }
+
+    // Node.js req/res (Vercel Serverless Function or Vite dev middleware)
+    if (response && (typeof response.status === "function" || typeof response.setHeader === "function")) {
+      const host = request.headers?.host || "localhost:5173";
+      const fullUrl = new URL(request.url || "/", `http://${host}`);
+      const searchParams = fullUrl.searchParams;
+
+      if (request.query && typeof request.query === "object") {
+        for (const [k, v] of Object.entries(request.query)) {
+          if (typeof v === "string" && !searchParams.has(k)) {
+            searchParams.set(k, v);
+          }
+        }
+      }
+
+      const result = await handleResolve(searchParams);
+      response.setHeader("Content-Type", "application/json");
+      response.setHeader("Access-Control-Allow-Origin", "*");
+      response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+
+      if (typeof response.status === "function" && typeof response.json === "function") {
+        return response.status(result.status).json(result.data);
+      } else {
+        response.statusCode = result.status;
+        return response.end(JSON.stringify(result.data));
+      }
+    }
+
+    // Edge / Standard Fetch Request
+    const fullUrl = new URL(request.url, "http://localhost");
+    const result = await handleResolve(fullUrl.searchParams);
+    return new Response(JSON.stringify(result.data), {
+      status: result.status,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "*",
+      },
+    });
+  } catch (err: any) {
+    console.error("FATAL_RESOLVE_ERROR:", err);
+    const errPayload = {
+      success: false,
+      error: err?.message || String(err),
+      stack: err?.stack,
+    };
+    if (response) {
+      if (typeof response.setHeader === "function") {
+        response.setHeader("Content-Type", "application/json");
+        response.setHeader("Access-Control-Allow-Origin", "*");
+      }
+      if (typeof response.status === "function" && typeof response.json === "function") {
+        return response.status(200).json(errPayload);
+      }
+      response.statusCode = 200;
+      return response.end(JSON.stringify(errPayload));
+    }
+    return new Response(JSON.stringify(errPayload), {
+      status: 200,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
   }
-
-  const host = request.headers?.get?.("host") || "localhost:5173";
-  const fullUrl = new URL(request.url, `http://${host}`);
-  const result = await handleResolve(fullUrl.searchParams);
-  return new Response(JSON.stringify(result.data), {
-    status: result.status,
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "*",
-    },
-  });
 }
 
-export async function GET(request: Request) {
-  const fullUrl = new URL(request.url, "http://localhost");
-  const result = await handleResolve(fullUrl.searchParams);
-  return new Response(JSON.stringify(result.data), {
-    status: result.status,
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "*",
-    },
-  });
-}
-
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "*",
-    },
-  });
-}
 
