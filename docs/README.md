@@ -20,11 +20,6 @@ This directory contains technical guides, architectural notes, and database migr
 
 ---
 
-## 🗄️ Database Migrations (`docs/`)
+## 🗄️ Database Schema
 
-Contains SQL migrations for Supabase/PostgreSQL:
-- `supabase_schema_complete.sql` - Full consolidated schema
-- `secure_supabase_rls.sql` - Row level security policies
-- `comments_migration.sql` - Discussion & comments tables
-- `notifications_polls_migration.sql` - Notification & poll structures
-- `party_chat_migration.sql` - WatchTogether chat synchronization
+- [`supabase_schema_complete.sql`](./supabase_schema_complete.sql) - The single complete, unified SQL schema for the Supabase backend. Run this script in the Supabase SQL editor to create all tables, indexes, constraints, RLS policies, and triggers.
