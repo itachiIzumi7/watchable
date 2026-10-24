@@ -20,6 +20,34 @@ export default defineConfig({
     }),
     cloudflare(),
     {
+      name: 'api-dev-server',
+      configureServer(server) {
+        server.middlewares.use(async (req, res, next) => {
+          if (req.url?.startsWith('/api/stream/proxy')) {
+            try {
+              const mod = await server.ssrLoadModule('./api/stream/proxy.ts');
+              return await mod.default(req, res);
+            } catch (err: any) {
+              res.statusCode = 500;
+              res.end(`Proxy dev error: ${err.message}`);
+              return;
+            }
+          }
+          if (req.url?.startsWith('/api/stream/resolve')) {
+            try {
+              const mod = await server.ssrLoadModule('./api/stream/resolve.ts');
+              return await mod.default(req, res);
+            } catch (err: any) {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ success: false, message: err.message }));
+              return;
+            }
+          }
+          next();
+        });
+      }
+    },
+    {
       name: 'download-proxy',
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
@@ -111,13 +139,6 @@ export default defineConfig({
   server: {
     hmr: {
       overlay: false // Disable error overlay for better performance
-    },
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8788',
-        changeOrigin: true,
-        secure: false,
-      }
     }
   },
   

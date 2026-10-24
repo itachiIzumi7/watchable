@@ -556,9 +556,9 @@ import { startProgressTracking } from '../../composables/useProgress'
 import { usePlaybackRoute } from '../../composables/usePlaybackRoute'
 import { getSyncClient } from '../../lib/syncClient'
 
-const HUB_BASE = 'https://hahaevilcraft.site'
-const STREAMSCRAPER_HUB = 'https://hahaevilcraft.site'
-const OPENSUBTITLES_API = `${HUB_BASE}/api/subtitles`
+const HUB_BASE = ''
+const STREAMSCRAPER_HUB = ''
+const OPENSUBTITLES_API = `/api/subtitles`
 
 interface LanguageVariant {
     language: string
@@ -1342,36 +1342,46 @@ export default defineComponent({
             }
         }
 
-        async function loadEnabledProviderList() {
-            try {
-                const response = await fetch(`${HUB_BASE}/api/providers?_cb=${Date.now()}`, {
-                    signal: AbortSignal.timeout(8000),
-                })
-                if (!response.ok) throw new Error(`Provider list failed: ${response.status}`)
-                const payload = await response.json()
-                // The hub returns an object keyed by provider id:
-                // { "vidrock": { name, enabled, priority, isClientSide }, ... }.
-                const map = payload && typeof payload === 'object' ? payload : {}
-                const list = Object.entries(map)
-                    .filter(([, p]: any) => p && p.enabled === true && !p.isClientSide && p.name)
-                    .map(([id, p]: any): { id: string; name: string; priority: number } => ({
-                        id: String(id),
-                        name: String(p.name),
-                        priority: typeof p.priority === 'number' ? p.priority : 999,
-                    }))
-                    .sort((a, b) => a.priority - b.priority)
-                providers.value = list.map(({ id, name }): ProviderStatus => ({
-                    id,
-                    name,
-                    status: 'waiting',
-                    percentage: 0,
-                }))
-                return providers.value
-            } catch (err) {
-                console.warn('[MoovieFrame] Could not load provider list:', err)
-                providers.value = []
-                return providers.value
-            }
+        const STREAMLY_GENERAL_SERVERS = [
+            { id: 'poseidon', name: 'Itachi' },
+            { id: 'salem_hls', name: 'Madara' },
+            { id: 'vixsrc_hls', name: 'Obito' },
+            { id: 'movienight_auto', name: 'Minato' },
+            { id: 'shiopa_hls', name: 'Eren' },
+            { id: 'cinejoy_nebula', name: 'Mikasa' },
+            { id: 'stellar_hls', name: 'Gojo' },
+            { id: 'stellar_miami', name: 'Sukuna' },
+            { id: 'orion', name: 'Kakashi' },
+            { id: 'purstream', name: 'Sasuke' },
+            { id: 'atlantia', name: 'Tanjiro' },
+            { id: 'rive_vanguard', name: 'Zoro' },
+            { id: 'rive_citadel', name: 'Luffy' },
+            { id: 'cinejoy_hls', name: 'Hashirama' },
+            { id: 'cinejoy_lisbon', name: 'Naruto' },
+            { id: 'vidzee', name: 'Killua' },
+        ]
+
+        const STREAMLY_ANIME_SERVERS = [
+            { id: 'miruro_anime', name: 'Shisui' },
+            { id: 'kaa_anime', name: 'Yuji' },
+            { id: 'kazo_anime', name: 'Megumi' },
+            { id: 'kyoo_anime', name: 'Toji' },
+            { id: 'juju_anime', name: 'Nobara' },
+            { id: 'lufi_anime', name: 'Goku' },
+            { id: 'poseidon_anime', name: 'Itachi Anime' },
+            { id: 'animeparadise', name: 'Saitama' },
+        ]
+
+        async function loadEnabledProviderList(): Promise<ProviderStatus[]> {
+            const isAnime = (props.mediaType as string) === 'anime' || Boolean(props.title && /anime/i.test(props.title))
+            const raw = isAnime ? [...STREAMLY_ANIME_SERVERS, ...STREAMLY_GENERAL_SERVERS] : STREAMLY_GENERAL_SERVERS
+            providers.value = raw.map(s => ({
+                id: s.id,
+                name: s.name,
+                status: 'waiting' as const,
+                percentage: 0,
+            }))
+            return providers.value
         }
 
         const loadServerOverrides = async () => {
@@ -2524,41 +2534,18 @@ export default defineComponent({
                 chainOrdered.value = ordered
                 triedProviders.value = new Set<string>()
                 await proxySettingPromise
-                let poseidonTriedInChain = false
                 for (const provider of ordered) {
+                    const id = provider.id || provider.name
+                    triedProviders.value.add(id.toLowerCase())
                     triedProviders.value.add(provider.name.toLowerCase())
-                    const ok = await selectServer(provider.name, { suppressErrors: true })
+                    const ok = await selectServer(id, { suppressErrors: true })
                     if (ok) {
-                        console.debug('[MoovieFrame] initial single-source scrape started:', provider.name)
+                        console.debug('[MoovieFrame] successfully playing on:', provider.name)
                         return
                     }
                     console.debug('[MoovieFrame] no playable stream on', provider.name, '- trying next enabled provider')
-                    // When the current provider has no cached/playable stream,
-                    // scrape Poseidon before falling through to the next provider.
-                    if (
-                        provider.name.toLowerCase() !== 'poseidon' &&
-                        !poseidonTriedInChain &&
-                        providerList.some((p) => p.name.toLowerCase() === 'poseidon')
-                    ) {
-                        poseidonTriedInChain = true
-                        const poseidonOk = await selectServer('poseidon', { suppressErrors: true })
-                        if (poseidonOk) return
-                    }
                 }
-                console.debug('[MoovieFrame] single-source scrapers yielded no stream, attempting full multi-source scrape fallback...')
-                const fallbackStreams = await fetchStreams().catch(() => [])
-                if (fallbackStreams && fallbackStreams.length > 0) {
-                    const best = pickBest(fallbackStreams)
-                    if (best) {
-                        try {
-                            await tryPlayStream(best)
-                        } catch {
-                            await tryFallbackStream(best)
-                        }
-                        return
-                    }
-                }
-                throw new Error('No enabled provider returned a playable stream')
+                throw new Error('All streaming servers failed to resolve a playable source')
             } catch (e: any) {
                 console.debug('[MoovieFrame] doLoad error:', e.message)
                 if (!playbackStarted.value) {
@@ -2683,14 +2670,18 @@ export default defineComponent({
             const cur = (selectedServer.value || '').toLowerCase()
             const startIdx = list.findIndex(p => (p.name || '').toLowerCase() === cur)
             for (let i = startIdx + 1; i < list.length; i++) {
-                const name = list[i]?.name
-                if (!name || triedProviders.value.has(name.toLowerCase())) continue
+                const item = list[i]
+                const name = item?.name
+                const id = item?.id || name
+                if (!name || triedProviders.value.has(name.toLowerCase()) || triedProviders.value.has(id.toLowerCase())) continue
                 triedProviders.value.add(name.toLowerCase())
-                console.log('[MoovieFrame] advancing provider chain to:', name)
+                triedProviders.value.add(id.toLowerCase())
+                console.log('[MoovieFrame] advancing provider chain to:', name, `(${id})`)
                 error.value = ''
                 loading.value = true
+                activeProviderStatus.value = `Fallback: trying ${name}…`
                 try {
-                    const ok = await selectServer(name, { suppressErrors: true })
+                    const ok = await selectServer(id, { suppressErrors: true })
                     if (ok) return
                 } catch { /* try next */ }
             }
@@ -2851,43 +2842,15 @@ export default defineComponent({
             await tryPlayStream(stream)
         }
 
-        async function selectServer(provider: string, opts?: { suppressErrors?: boolean }) {
+        async function selectServer(provider: string, opts?: { suppressErrors?: boolean }): Promise<boolean> {
             selectedServer.value = provider
-            // Manual server picks (no suppressErrors) reset chain tracking so a
-            // later fallback starts fresh; chain calls manage the set themselves.
             if (!opts?.suppressErrors) triedProviders.value.clear()
             settingsOpen.value = false
             settingsSection.value = null
-            console.debug('[MoovieFrame] selectServer:', provider)
-            // While the automatic provider chain in doLoad() walks through
-            // sources, a single failed provider must not flash its error
-            // overlay (e.g. "Failed to connect to poseidon") for a frame
-            // before the next provider starts. Errors are only surfaced when
-            // the whole chain has failed (set by doLoad's catch).
-            const suppressErrors = opts?.suppressErrors === true
-
-            const group = streams.value.filter(s => (s.providerName || '').toLowerCase() === provider.toLowerCase())
-            if (group.length > 0) {
-                const best = pickBest(group)
-                if (best) {
-                    try {
-                        await tryPlayStream(best)
-                        console.debug('[MoovieFrame] switched to server:', provider)
-                        return true
-                    } catch (e) {
-                        console.error('[MoovieFrame] failed to switch to server:', provider, e)
-                        return false
-                    }
-                }
-                return false
-            }
 
             const providerObj = providers.value.find(p => (p.name || '').toLowerCase() === provider.toLowerCase() || (p.id || '').toLowerCase() === provider.toLowerCase())
-            const providerId = providerObj?.id || provider
-            if (!providerId) {
-                console.warn('[MoovieFrame] selectServer: no providerId found for', provider)
-                return false
-            }
+            const serverId = providerObj?.id || provider
+            const serverName = providerObj?.name || provider
 
             const video = videoRef.value
             if (video) video.pause()
@@ -2895,292 +2858,90 @@ export default defineComponent({
             loading.value = true
             error.value = ''
             firstFrameShown.value = false
-            activeProviderStatus.value = `Searching ${provider}…`
-            console.debug('[MoovieFrame][single-source] loader status initialized', {
-                provider,
-                providerId,
-                status: activeProviderStatus.value,
-            })
+            activeProviderStatus.value = `Connecting to ${serverName}…`
 
             if (providerObj) {
                 providerObj.status = 'pending'
                 providerObj.percentage = 0
             }
 
-            const id = String(props.mediaId)
-            const params = new URLSearchParams({ id: providerId, tmdbId: id, type: props.mediaType })
-            params.set('starred', '1')
-            // A server click must stay scoped to that provider. The hub's
-            // source endpoint supports fallback, but the player deliberately
-            // disables it so another scraper never starts implicitly.
-            params.set('fallback', 'false')
-            if (props.title) params.set('title', props.title)
-            if (props.season > 0) params.set('season', String(props.season))
-            if (props.episode > 0) params.set('episode', String(props.episode))
-            params.set('_cb', String(Date.now()))
-            const scrapeUrl = `${HUB_BASE}/scrape/source?${params}`
-
-            console.debug('[MoovieFrame] starting single source scrape:', scrapeUrl)
-            cancelScrape()
-
-            let sourceEventSource: EventSource | null = new EventSource(scrapeUrl)
-            activeSourceEventSource = sourceEventSource
-            sourceEventSource.onopen = () => console.debug('[MoovieFrame][single-source] connection opened', { providerId })
-            const scraperStreams: HubStream[] = []
-            let finished = false
-
-            function cleanUpSSE() {
-                const closingSource = sourceEventSource
-                if (closingSource) closingSource.close()
-                if (activeSourceEventSource === closingSource) activeSourceEventSource = null
-                sourceEventSource = null
-            }
-
-            return new Promise<boolean>((resolve) => {
-                let singleSseErrorCount = 0
-                const SINGLE_SSE_MAX_MS = 90000
-                const singleSseStartedAt = Date.now()
-                let singleSseTimeout: ReturnType<typeof setTimeout> | null = null
-                const armSingleSseTimeout = (idleMs = 20000) => {
-                    if (singleSseTimeout) clearTimeout(singleSseTimeout)
-                    const remaining = SINGLE_SSE_MAX_MS - (Date.now() - singleSseStartedAt)
-                    const delay = Math.max(1000, Math.min(idleMs, remaining))
-                    singleSseTimeout = setTimeout(() => {
-                        if (!finished && sourceEventSource) {
-                            console.warn('[MoovieFrame][single-source] idle timeout', providerId)
-                            cleanUpSSE()
-                            loading.value = false
-                            resolve(false)
-                        }
-                    }, delay)
-                }
-                armSingleSseTimeout()
-                sourceEventSource!.onerror = (event) => {
-                    singleSseErrorCount++
-                    console.warn('[MoovieFrame][single-source] connection error', {
-                        providerId,
-                        readyState: sourceEventSource?.readyState,
-                        event,
-                        count: singleSseErrorCount,
-                    })
-                    if (singleSseErrorCount >= 2 && !finished) {
-                        if (singleSseTimeout) clearTimeout(singleSseTimeout)
-                        cleanUpSSE()
-                        loading.value = false
-                        resolve(false)
-                    }
-                }
-                sourceEventSource!.addEventListener('update', (e: MessageEvent) => {
-                    try {
-                        const data = JSON.parse(e.data)
-                        armSingleSseTimeout()
-                        console.debug('[MoovieFrame][single-source] update received', {
-                            providerId,
-                            id: data.id,
-                            status: data.status,
-                            percentage: data.percentage,
-                            loaderStatusBefore: activeProviderStatus.value,
-                        })
-                        if (providerObj && data.id === providerId) {
-                            providerObj.status = data.status || 'pending'
-                            providerObj.percentage = typeof data.percentage === 'number' ? data.percentage : 0
-                        }
-                    } catch { /* ignore */ }
+            try {
+                const id = String(props.mediaId)
+                const query = new URLSearchParams({
+                    server: serverId,
+                    tmdbId: id,
+                    type: props.mediaType === 'tv' ? 'tv' : 'movie',
+                    title: props.title || '',
                 })
+                if (props.season > 0) query.set('season', String(props.season))
+                if (props.episode > 0) query.set('episode', String(props.episode))
 
-                sourceEventSource!.addEventListener('completed', async (e: MessageEvent) => {
-                    if (finished) return
-                    finished = true
-                    if (singleSseTimeout) clearTimeout(singleSseTimeout)
-                    cleanUpSSE()
+                const ctrl = new AbortController()
+                const timeout = setTimeout(() => ctrl.abort(), 12000)
+                const res = await fetch(`/api/stream/resolve?${query}`, { signal: ctrl.signal })
+                clearTimeout(timeout)
 
-                    try {
-                        const data = JSON.parse(e.data)
-                    const rawStreams = Array.isArray(data.stream) ? data.stream : (data.stream ? [data.stream] : (Array.isArray(data.streams) ? data.streams : []))
+                if (!res.ok) throw new Error(`HTTP ${res.status}`)
+                const data = await res.json()
 
-                    // A manual server selection uses a separate SSE endpoint from the
-                    // initial scraper run. Preserve that source's variants here too;
-                    // otherwise Athena's streams are playable but never appear in the
-                    // Audio menu.
-                    const sourceVariants = rawStreams.flatMap((mw: any) =>
-                        Array.isArray(mw._languageVariants) ? mw._languageVariants : []
-                    )
-                    for (const [variantIndex, variant] of (sourceVariants as any[]).entries()) {
-                        const catalogId = variant?.catalogId ?? variant?.id
-                        const id = catalogId
-                            ? `${providerId}:${catalogId}`
-                            : `${providerId}:direct-${variantIndex}`
-                        const exists = languageVariants.value.some(existing =>
-                            existing.id === id ||
-                            (existing as any).catalogId === catalogId ||
-                            (existing.language?.toLowerCase() === (variant.language ?? '').toLowerCase() && existing.provider === providerId)
-                        )
-                        if (!exists) {
-                            languageVariants.value.push({
-                                language: variant.language ?? 'Unknown',
-                                label: variant.language ?? 'Unknown',
-                                provider: providerId,
-                                id,
-                                catalogId,
-                                type: props.mediaType === 'tv' ? 'show' : 'movie',
-                                season: props.season,
-                                episode: props.episode,
-                                // Pre-resolved variant: play directly with no re-resolution
-                                url: variant.url,
-                                headers: variant.headers,
-                                streamType: variant.type,
-                            } as any)
-                        }
-                    }
-                    if (sourceVariants.length) {
-                        const existingHlsTracks = audioTracks.value.filter(t => t.id < 1999)
-                        const englishOriginalTrack = {
-                            id: 1999,
-                            name: 'English (Original)',
-                            lang: 'English',
-                            _isOriginal: true,
-                        }
-                        const variantTracks = languageVariants.value.map((v, i) => ({
-                            id: 2000 + i,
-                            name: v.label || v.language,
-                            lang: v.language,
-                            _variantId: v.id,
-                            _catalogId: (v as any).catalogId || v.id.replace(/^[a-z0-9-]+:/i, ''),
-                        }))
-                        audioTracks.value = [
-                            ...existingHlsTracks,
-                            englishOriginalTrack,
-                            ...variantTracks,
-                        ]
-                        console.debug('[MoovieFrame] added language variants from single source:', providerId, sourceVariants.length)
-                    }
-
-                    for (const mw of rawStreams) {
-                        const qualities = mw.qualities || {}
-                        const qualityLabels = Object.keys(qualities)
-                        const isHls = mw.type === 'hls' || !!mw.playlist
-
-                        if (qualityLabels.length) {
-                            for (const qLabel of qualityLabels) {
-                                const entry = qualities[qLabel]
-                                if (!entry) continue
-                                const streamUrl = (entry.playlist || entry.url || '')
-                                if (!streamUrl && !mw.proxyUrl) continue
-
-                                const stream: HubStream = {
-                                    name: mw.name || provider,
-                                    url: streamUrl,
-                                    proxyUrl: mw.proxyUrl || '',
-                                    quality: qLabel,
-                                    type: (entry.type || 'hls') === 'hls' ? 'm3u8' : 'mp4',
-                                    headers: mw.headers,
-                                    providerName: provider,
-                                    providerId: provider,
-                                    proxyMode: normalizeProxyMode(data.proxyMode),
-                                    qualities: qualityLabels,
-                                }
-                                if (stream.url?.startsWith('/')) stream.url = HUB_BASE + stream.url
-                                if (stream.proxyUrl?.startsWith('/')) stream.proxyUrl = HUB_BASE + stream.proxyUrl
-                                scraperStreams.push(stream)
-                            }
-                        } else {
-                            const streamUrl = isHls ? (mw.playlist || '') : (mw.url || '')
-                            const stream: HubStream = {
-                                name: mw.name || provider,
-                                url: streamUrl || '',
-                                proxyUrl: mw.proxyUrl || '',
-                                quality: 'Auto',
-                                type: isHls ? 'm3u8' : (mw.type || 'mp4'),
-                                headers: mw.headers,
-                                providerName: provider,
-                                providerId: provider,
-                                proxyMode: normalizeProxyMode(data.proxyMode),
-                            }
-                            if (stream.url?.startsWith('/')) stream.url = HUB_BASE + stream.url
-                            if (stream.proxyUrl?.startsWith('/')) stream.proxyUrl = HUB_BASE + stream.proxyUrl
-                            if (!stream.url && !stream.proxyUrl) continue
-                            scraperStreams.push(stream)
-                        }
-                    }
-
-                    if (scraperStreams.length > 0) {
-                        if (providerObj) {
-                            providerObj.status = 'success'
-                            providerObj.percentage = 100
-                        }
-                        streams.value = [...streams.value, ...scraperStreams]
-                        const best = pickBest(scraperStreams)
-                        if (best) {
-                            loading.value = false
-                            try {
-                                await tryPlayStream(best)
-                                resolve(true)
-                                return
-                            } catch (streamErr) {
-                                console.warn('[MoovieFrame] Failed to play best stream, trying fallbacks:', streamErr)
-                                for (const fallback of scraperStreams.filter(s => s !== best)) {
-                                    try {
-                                        await tryPlayStream(fallback)
-                                        resolve(true)
-                                        return
-                                    } catch {}
-                                }
-                                resolve(false)
-                                return
-                            }
-                        } else {
-                            if (!suppressErrors) { error.value = `No compatible stream found on ${provider}` }
-                            loading.value = false
-                            resolve(false)
-                            return
-                        }
-                    } else {
-                        if (!suppressErrors) { error.value = `No streams returned on ${provider}` }
-                        loading.value = false
-                        resolve(false)
-                        return
-                    }
-                } catch (err: any) {
+                if (data && data.success && data.streamUrl) {
                     if (providerObj) {
-                        providerObj.status = 'notfound'
+                        providerObj.status = 'success'
                         providerObj.percentage = 100
                     }
-                    if (!suppressErrors) { error.value = `No streams found on ${provider}` }
+
+                    // Map subtitles if available
+                    if (data.subtitles && Array.isArray(data.subtitles) && data.subtitles.length > 0) {
+                        const newTracks = data.subtitles.map((sub: any, idx: number) => ({
+                            id: OPENSUBS_TRACK_OFFSET + idx,
+                            name: sub.label || sub.lang || `Subtitle ${idx + 1}`,
+                            lang: sub.lang || 'en',
+                            subUrl: sub.url,
+                            needsProxy: false,
+                        }))
+                        subtitleTracks.value = [
+                            ...subtitleTracks.value.filter(t => t.id < OPENSUBS_TRACK_OFFSET),
+                            ...newTracks,
+                        ]
+                    }
+
+                    const hubStream: HubStream = {
+                        name: data.serverName || serverName,
+                        url: data.streamUrl,
+                        proxyUrl: '',
+                        quality: data.quality || 'Auto',
+                        type: data.mode === 'hls' ? 'm3u8' : 'mp4',
+                        providerName: serverName,
+                        providerId: serverId,
+                    }
+                    streams.value = [hubStream]
+                    selectedStreamIndex.value = 0
+
+                    await tryPlayStream(hubStream)
                     loading.value = false
-                    resolve(false)
+                    playbackStarted.value = true
+                    return true
+                } else {
+                    if (providerObj) {
+                        providerObj.status = 'failure'
+                        providerObj.percentage = 100
+                    }
+                    if (!opts?.suppressErrors) {
+                        error.value = data?.message || `No playable stream on ${serverName}`
+                    }
+                    return false
                 }
-            })
-
-            sourceEventSource!.addEventListener('noOutput', () => {
-                if (finished) return
-                finished = true
-                if (singleSseTimeout) clearTimeout(singleSseTimeout)
-                cleanUpSSE()
-
-                if (providerObj) {
-                    providerObj.status = 'notfound'
-                    providerObj.percentage = 100
-                }
-                if (!suppressErrors) { error.value = `No streams found on ${provider}` }
-                loading.value = false
-                resolve(false)
-            })
-
-            sourceEventSource!.addEventListener('error', () => {
-                if (finished) return
-                finished = true
-                if (singleSseTimeout) clearTimeout(singleSseTimeout)
-                cleanUpSSE()
-
+            } catch (err: any) {
+                console.warn('[MoovieFrame] selectServer failed:', serverName, err.message)
                 if (providerObj) {
                     providerObj.status = 'failure'
                     providerObj.percentage = 100
                 }
-                if (!suppressErrors) { error.value = `Failed to connect to ${provider}` }
-                loading.value = false
-                resolve(false)
-            })
-        })
+                if (!opts?.suppressErrors) {
+                    error.value = `Failed to connect to ${serverName}`
+                }
+                return false
+            }
         }
 
         async function selectAudioTrack(index: number) {

@@ -35,15 +35,60 @@ if (typeof window !== 'undefined') {
 }
 
 export const movieServers = ref<Server[]>([
-  { name: 'Moovie', urlTemplate: '', isApiProvider: true }
+  { name: 'Itachi', urlTemplate: '', isApiProvider: true },
+  { name: 'Madara', urlTemplate: '', isApiProvider: true },
+  { name: 'Obito', urlTemplate: '', isApiProvider: true },
+  { name: 'Minato', urlTemplate: '', isApiProvider: true },
+  { name: 'Eren', urlTemplate: '', isApiProvider: true },
+  { name: 'Mikasa', urlTemplate: '', isApiProvider: true },
+  { name: 'Gojo', urlTemplate: '', isApiProvider: true },
+  { name: 'Sukuna', urlTemplate: '', isApiProvider: true },
+  { name: 'Kakashi', urlTemplate: '', isApiProvider: true },
+  { name: 'Sasuke', urlTemplate: '', isApiProvider: true },
+  { name: 'Tanjiro', urlTemplate: '', isApiProvider: true },
+  { name: 'Zoro', urlTemplate: '', isApiProvider: true },
+  { name: 'Luffy', urlTemplate: '', isApiProvider: true },
+  { name: 'Hashirama', urlTemplate: '', isApiProvider: true },
+  { name: 'Naruto', urlTemplate: '', isApiProvider: true },
+  { name: 'Killua', urlTemplate: '', isApiProvider: true },
 ]);
 
 export const tvServers = ref<Server[]>([
-  { name: 'Moovie', urlTemplate: '', isApiProvider: true }
+  { name: 'Itachi', urlTemplate: '', isApiProvider: true },
+  { name: 'Madara', urlTemplate: '', isApiProvider: true },
+  { name: 'Obito', urlTemplate: '', isApiProvider: true },
+  { name: 'Minato', urlTemplate: '', isApiProvider: true },
+  { name: 'Eren', urlTemplate: '', isApiProvider: true },
+  { name: 'Mikasa', urlTemplate: '', isApiProvider: true },
+  { name: 'Gojo', urlTemplate: '', isApiProvider: true },
+  { name: 'Sukuna', urlTemplate: '', isApiProvider: true },
+  { name: 'Kakashi', urlTemplate: '', isApiProvider: true },
+  { name: 'Sasuke', urlTemplate: '', isApiProvider: true },
+  { name: 'Tanjiro', urlTemplate: '', isApiProvider: true },
+  { name: 'Zoro', urlTemplate: '', isApiProvider: true },
+  { name: 'Luffy', urlTemplate: '', isApiProvider: true },
+  { name: 'Hashirama', urlTemplate: '', isApiProvider: true },
+  { name: 'Naruto', urlTemplate: '', isApiProvider: true },
+  { name: 'Killua', urlTemplate: '', isApiProvider: true },
 ]);
 
 const idToNameMap: Record<string, string> = {
-  moovie: 'Moovie'
+  itachi: 'Itachi',
+  madara: 'Madara',
+  obito: 'Obito',
+  minato: 'Minato',
+  eren: 'Eren',
+  mikasa: 'Mikasa',
+  gojo: 'Gojo',
+  sukuna: 'Sukuna',
+  kakashi: 'Kakashi',
+  sasuke: 'Sasuke',
+  tanjiro: 'Tanjiro',
+  zoro: 'Zoro',
+  luffy: 'Luffy',
+  hashirama: 'Hashirama',
+  naruto: 'Naruto',
+  killua: 'Killua',
 };
 
 export const isDefaultServerLoaded = ref(false);

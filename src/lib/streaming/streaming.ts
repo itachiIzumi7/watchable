@@ -1,0 +1,343 @@
+// Streamly Universal Provider & Streaming Server Architecture
+export type ServerCategory = "general" | "anime";
+
+export interface StreamServer {
+  id: string;
+  name: string;
+  badge: string;
+  category: ServerCategory;
+  desc: string;
+  isNativeHLS: boolean;
+  supportsDualAudio?: boolean;
+  getMovieUrl: (tmdbId: number | string, title?: string) => string;
+  getTVUrl: (tmdbId: number | string, season?: number, episode?: number, title?: string) => string;
+}
+
+// Priority chains (Native Servers Only)
+export const MOVIE_SERIES_PRIORITY_SERVERS = [
+  "poseidon",
+  "purstream",
+  "shiopa_hls",
+  "salem_hls",
+  "vixsrc_hls",
+  "cinejoy_nebula",
+  "movienight_auto",
+  "vidzee",
+  "orion",
+  "cinejoy_lisbon",
+  "atlantia",
+  "rive_vanguard",
+  "rive_citadel",
+  "stellar_miami",
+  "stellar_hls",
+  "cinejoy_hls",
+];
+
+export const ANIME_SUB_PRIORITY_SERVERS = [
+  "animeparadise",
+  "poseidon_anime",
+  "miruro_anime",
+  "kaa_anime",
+  "kazo_anime",
+  "kyoo_anime",
+  "juju_anime",
+  "lufi_anime",
+  "orion_anime",
+];
+
+export const ANIME_DUB_PRIORITY_SERVERS = [
+  "miruro_anime",
+  "animeparadise",
+  "poseidon_anime",
+  "kaa_anime",
+  "kazo_anime",
+  "kyoo_anime",
+  "juju_anime",
+  "lufi_anime",
+  "orion_anime",
+];
+
+export const ANIME_PRIORITY_SERVERS = ANIME_SUB_PRIORITY_SERVERS;
+
+export const INACTIVE_EMBED_SERVERS: string[] = [];
+
+export const ALL_STREAM_SERVERS: StreamServer[] = [
+  // ─── 1. Prioritized Movies & Series Servers (Checked First) ───
+  {
+    id: "poseidon",
+    name: "Itachi",
+    badge: "Fast Stream",
+    category: "general",
+    desc: "Lightning-fast direct Cloudflare Edge CDN stream with zero buffering",
+    isNativeHLS: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+  {
+    id: "vixsrc_hls",
+    name: "Obito",
+    badge: "Multi-Audio",
+    category: "general",
+    desc: "Direct native stream with multiple audio tracks",
+    isNativeHLS: true,
+    supportsDualAudio: true,
+    getMovieUrl: (id) => `https://movienig.ht/watch/movie/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://movienig.ht/watch/tv/${id}/${s}/${e}`,
+  },
+  {
+    id: "salem_hls",
+    name: "Madara",
+    badge: "Direct Stream",
+    category: "general",
+    desc: "Lightning-fast direct native stream (<300ms)",
+    isNativeHLS: true,
+    getMovieUrl: (id) => `https://movienig.ht/watch/movie/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://movienig.ht/watch/tv/${id}/${s}/${e}`,
+  },
+  {
+    id: "movienight_auto",
+    name: "Minato",
+    badge: "Multi-Audio",
+    category: "general",
+    desc: "Direct native stream with auto-failover across global nodes",
+    isNativeHLS: true,
+    supportsDualAudio: true,
+    getMovieUrl: (id) => `https://movienig.ht/watch/movie/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://movienig.ht/watch/tv/${id}/${s}/${e}`,
+  },
+  {
+    id: "shiopa_hls",
+    name: "Eren",
+    badge: "Direct Stream",
+    category: "general",
+    desc: "Lightning-fast direct stream (<300ms)",
+    isNativeHLS: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+  {
+    id: "cinejoy_nebula",
+    name: "Mikasa",
+    badge: "Subtitles",
+    category: "general",
+    desc: "Direct stream with multi-language captions",
+    isNativeHLS: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+  {
+    id: "stellar_hls",
+    name: "Gojo",
+    badge: "Multi-Sub",
+    category: "general",
+    desc: "Lightning-fast direct native stream with multi-language subtitles",
+    isNativeHLS: true,
+    getMovieUrl: (id) => `https://stellar.gdn/watch/movie/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://stellar.gdn/watch/tv/${id}?s=${s}&e=${e}`,
+  },
+  {
+    id: "stellar_miami",
+    name: "Sukuna",
+    badge: "Fast Stream",
+    category: "general",
+    desc: "Ultra-fast direct native stream",
+    isNativeHLS: true,
+    getMovieUrl: (id) => `https://stellar.gdn/watch/movie/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://stellar.gdn/watch/tv/${id}?s=${s}&e=${e}`,
+  },
+  {
+    id: "orion",
+    name: "Kakashi",
+    badge: "Multi-Audio",
+    category: "general",
+    desc: "Stream with Hindi, Spanish, and English multi-audio tracks + VTT subtitles",
+    isNativeHLS: true,
+    supportsDualAudio: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+  {
+    id: "purstream",
+    name: "Sasuke",
+    badge: "Direct Stream",
+    category: "general",
+    desc: "Direct fast stream",
+    isNativeHLS: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+  {
+    id: "atlantia",
+    name: "Tanjiro",
+    badge: "Multi-Audio",
+    category: "general",
+    desc: "Direct native stream gateway with auto-failover",
+    isNativeHLS: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+  {
+    id: "rive_vanguard",
+    name: "Zoro",
+    badge: "Fast Stream",
+    category: "general",
+    desc: "Direct stream (<400ms)",
+    isNativeHLS: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+  {
+    id: "rive_citadel",
+    name: "Luffy",
+    badge: "Multi-Audio",
+    category: "general",
+    desc: "Direct native stream with multi-language audio and WebVTT captions",
+    isNativeHLS: true,
+    supportsDualAudio: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+  {
+    id: "cinejoy_hls",
+    name: "Hashirama",
+    badge: "Direct Stream",
+    category: "general",
+    desc: "Lightning-fast direct native stream",
+    isNativeHLS: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+  {
+    id: "cinejoy_lisbon",
+    name: "Naruto",
+    badge: "Fast Stream",
+    category: "general",
+    desc: "Ultra-fast direct native stream",
+    isNativeHLS: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+  {
+    id: "vidzee",
+    name: "Killua",
+    badge: "Direct Stream",
+    category: "general",
+    desc: "Lightning-fast direct native stream",
+    isNativeHLS: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+
+  // ─── 2. Prioritized Anime Servers (Dual Audio Dub & Sub) ───
+  {
+    id: "miruro_anime",
+    name: "Shisui",
+    badge: "Dub & Sub",
+    category: "anime",
+    desc: "Lightning-fast direct native streams with English Dub and Subtitles",
+    isNativeHLS: true,
+    supportsDualAudio: true,
+    getMovieUrl: (id, title) => `https://barelystarted.miruro.tv/search?q=${encodeURIComponent(title || String(id))}`,
+    getTVUrl: (id, _s = 1, _e = 1, title) => `https://barelystarted.miruro.tv/search?q=${encodeURIComponent(title || String(id))}`,
+  },
+  {
+    id: "kaa_anime",
+    name: "Yuji",
+    badge: "Dub & Sub",
+    category: "anime",
+    desc: "Direct native stream with both Japanese audio and English Dub",
+    isNativeHLS: true,
+    supportsDualAudio: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+  {
+    id: "kazo_anime",
+    name: "Megumi",
+    badge: "Multi-Sub",
+    category: "anime",
+    desc: "Direct native stream with Dual Audio & 8+ subtitle languages",
+    isNativeHLS: true,
+    supportsDualAudio: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+  {
+    id: "kyoo_anime",
+    name: "Toji",
+    badge: "Dual Audio",
+    category: "anime",
+    desc: "Lightning-fast native anime stream with dual audio",
+    isNativeHLS: true,
+    supportsDualAudio: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+  {
+    id: "juju_anime",
+    name: "Nobara",
+    badge: "Multi-Sub",
+    category: "anime",
+    desc: "Instant native anime stream with multi-language subtitle tracks",
+    isNativeHLS: true,
+    supportsDualAudio: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+  {
+    id: "lufi_anime",
+    name: "Goku",
+    badge: "Dub & Sub",
+    category: "anime",
+    desc: "High-speed alternative native anime stream",
+    isNativeHLS: true,
+    supportsDualAudio: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+  {
+    id: "poseidon_anime",
+    name: "Itachi Anime",
+    badge: "Sub Only",
+    category: "anime",
+    desc: "Ultra-fast direct stream with zero buffering for anime series and films (Japanese Sub)",
+    isNativeHLS: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+  {
+    id: "orion_anime",
+    name: "Tengen",
+    badge: "Multi-Audio",
+    category: "anime",
+    desc: "Multi-audio anime streams with English Dub, Japanese Sub, and Spanish audio",
+    isNativeHLS: true,
+    supportsDualAudio: true,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+  {
+    id: "animeparadise",
+    name: "Saitama",
+    badge: "Sub Only",
+    category: "anime",
+    desc: "High-quality master anime stream with Japanese audio and clean English subtitles",
+    isNativeHLS: true,
+    supportsDualAudio: false,
+    getMovieUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+    getTVUrl: (id, s = 1, e = 1) => `https://autoembed.co/tv/tmdb/${id}/${s}/${e}`,
+  },
+];
+
+// Fallback demo video
+export const DEMO_VIDEO_SOURCES: Record<string, string> = {
+  default: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+  tears: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+};
+
+// Monetization smartlinks
+export const AD_CONFIG = {
+  admavenSmartLink: "https://calwhichherea.com?W7VTB=1727040",
+  adsterraSmartLink: "https://asiafilm.org/4/29c3ac4968f8bf21aad6d9aa64d8b9b0",
+  triggerAd: () => {},
+};
