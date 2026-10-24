@@ -1,5 +1,10 @@
-// api/stream/resolve.ts
 import crypto from "crypto";
+import vm from "vm";
+import fs from "fs";
+import path from "path";
+import { execFile } from "child_process";
+// api/stream/resolve.ts
+
 
 // src/lib/streaming/streaming.ts
 var ALL_STREAM_SERVERS = [
@@ -270,7 +275,7 @@ var ALL_STREAM_SERVERS = [
 ];
 
 // src/lib/streaming/cinejoy.ts
-import vm from "vm";
+
 var cachedApiPromise = null;
 async function initCinejoyApi() {
   try {
@@ -744,8 +749,8 @@ async function resolveKAAStream(title, episode = 1, _preferredAudio = "dub") {
 }
 
 // src/lib/streaming/stellar.ts
-import fs from "fs";
-import path from "path";
+
+
 var cachedEngine = null;
 var engineInitPromise = null;
 async function getWasmEngine() {
@@ -887,9 +892,9 @@ async function resolveStellarStream(targetServer = "auto", tmdbId, type, season 
 }
 
 // src/lib/streaming/miruro.ts
-import { execFile } from "child_process";
-import fs2 from "fs";
-import path2 from "path";
+
+var fs2 = fs;
+var path2 = path;
 var animeIdCache = /* @__PURE__ */ new Map([
   ["jujutsu kaisen", "l9aQcH0K4elYGR6uiKnFUiymK44zIuzo"],
   ["jujutsu kaisen season 2", "l9aQcH0K4elYGR6uiKnFUiymK44zIuzo"]
