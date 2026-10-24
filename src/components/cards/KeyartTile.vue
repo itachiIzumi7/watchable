@@ -1,7 +1,13 @@
 <template>
     <article class="keyart-tile" :class="{ 'is-large': size === 'lg', 'is-loading': loading }">
         <div v-if="loading" class="keyart-tile__frame keyart-tile__skeleton-shimmer" />
-        <router-link v-else :to="routeTo" class="keyart-tile__link" :aria-label="title">
+        <router-link
+            v-else
+            :to="routeTo"
+            class="keyart-tile__link"
+            :aria-label="title"
+            @mouseenter="handleEnter"
+        >
             <div class="keyart-tile__frame">
                 <img
                     v-if="imageUrl"
@@ -41,6 +47,7 @@
 import { computed, defineComponent, PropType } from 'vue';
 import { useWebImage } from '../../utils/useWebImage';
 import { useAppPaths } from '../../composables/useAppPaths';
+import { useRoutePrefetch } from '../../composables/useRoutePrefetch';
 
 type MediaType = 'movie' | 'tv';
 
@@ -64,6 +71,8 @@ export default defineComponent({
     },
     setup(props) {
         const { detailPath } = useAppPaths();
+        const { prefetchRoute } = useRoutePrefetch();
+
         const imageUrl = computed(() => {
             const path = props.backdropPath || props.posterPath;
             if (!path) return '';
@@ -80,7 +89,11 @@ export default defineComponent({
             detailPath(props.type === 'tv' ? 'tv' : 'movie', props.id)
         );
 
-        return { imageUrl, initial, year, routeTo };
+        const handleEnter = () => {
+            prefetchRoute(routeTo.value);
+        };
+
+        return { imageUrl, initial, year, routeTo, handleEnter };
     }
 });
 </script>

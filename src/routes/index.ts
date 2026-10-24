@@ -1,16 +1,16 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import Movies from '../pages/Movies.vue'
-import TVShows from '../pages/TVShows.vue'
-import Anime from '../pages/Anime.vue'
-import Discover from '../pages/Discover.vue'
-import Search from '../pages/Search.vue'
-import Movie from '../pages/Movie.vue'
-import TVShow from '../pages/TVShow.vue'
-import AnimeDetail from '../pages/AnimeDetail.vue'
-import Actor from '../pages/Actor.vue'
-import StreamMovie from '../pages/StreamMovie.vue'
-import StreamTVShow from '../pages/StreamTVShow.vue'
-import StreamAnime from '../pages/StreamAnime.vue'
+const Movies = () => import('../pages/Movies.vue')
+const TVShows = () => import('../pages/TVShows.vue')
+const Anime = () => import('../pages/Anime.vue')
+const Discover = () => import('../pages/Discover.vue')
+const Search = () => import('../pages/Search.vue')
+const Movie = () => import('../pages/Movie.vue')
+const TVShow = () => import('../pages/TVShow.vue')
+const AnimeDetail = () => import('../pages/AnimeDetail.vue')
+const Actor = () => import('../pages/Actor.vue')
+const StreamMovie = () => import('../pages/StreamMovie.vue')
+const StreamTVShow = () => import('../pages/StreamTVShow.vue')
+const StreamAnime = () => import('../pages/StreamAnime.vue')
 import { useSeo } from '../composables/useSeo'
 import { recordDetailReturnPath } from '../composables/useDetailBackNavigation'
 

@@ -98,6 +98,7 @@ import { useAppPaths } from '../../composables/useAppPaths';
 
 
 import { prefetchAnimeTmdbArtwork } from '../../composables/useAnimeTmdbArtwork';
+import { prefetchResolvedRoute } from '../../composables/useRoutePrefetch';
 
 
 type MediaType = 'movie' | 'tv' | 'anime';
@@ -278,7 +279,12 @@ export default defineComponent({
             }
         };
 
+        const prefetchTargetRoute = () => {
+            prefetchResolvedRoute(router, routeTo.value);
+        };
+
         const handleEnter = () => {
+            prefetchTargetRoute();
             if (leaveTimer !== null) {
                 window.clearTimeout(leaveTimer);
                 leaveTimer = null;

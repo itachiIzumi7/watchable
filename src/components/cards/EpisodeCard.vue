@@ -5,6 +5,7 @@
             :to="playable ? routeTo : undefined"
             class="episode-card__link"
             :aria-label="`Episode ${episodeNumber}: ${name}`"
+            @mouseenter="handleEnter"
         >
             <div class="episode-card__still">
                 <img
@@ -55,6 +56,7 @@
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue';
 import { useWebImage } from '../../utils/useWebImage';
+import { useRoutePrefetch } from '../../composables/useRoutePrefetch';
 
 export default defineComponent({
     name: 'EpisodeCard',
@@ -71,6 +73,8 @@ export default defineComponent({
         playable: { type: Boolean, default: true }
     },
     setup(props) {
+        const { prefetchRoute } = useRoutePrefetch();
+
         const imageUrl = computed(() => {
             if (!props.stillPath) return '';
             return useWebImage(props.stillPath, 'medium');
@@ -94,7 +98,13 @@ export default defineComponent({
             () => `/stream/tv-show/${props.showId}/season/${props.seasonNumber}/episode/${props.episodeNumber}`
         );
 
-        return { imageUrl, aired, airDateLabel, routeTo };
+        const handleEnter = () => {
+            if (props.playable && routeTo.value) {
+                prefetchRoute(routeTo.value);
+            }
+        };
+
+        return { imageUrl, aired, airDateLabel, routeTo, handleEnter };
     }
 });
 </script>

@@ -2075,6 +2075,9 @@ async function handler(request, response) {
       response.setHeader("Content-Type", "application/json");
       response.setHeader("Access-Control-Allow-Origin", "*");
       response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+      if (result2.data?.success && result2.data?.streamUrl) {
+        response.setHeader("Cache-Control", "public, s-maxage=1800, stale-while-revalidate=86400");
+      }
       if (typeof response.status === "function" && typeof response.json === "function") {
         return response.status(result2.status).json(result2.data);
       } else {
@@ -2090,7 +2093,8 @@ async function handler(request, response) {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, OPTIONS",
-        "Access-Control-Allow-Headers": "*"
+        "Access-Control-Allow-Headers": "*",
+        ...(result.data?.success && result.data?.streamUrl ? { "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=86400" } : {})
       }
     });
   } catch (err) {

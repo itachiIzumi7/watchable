@@ -22,8 +22,16 @@
             >
                 <KeepAlive
                     :include="[
-                        'HomeShell'
+                        'HomeShell',
+                        'Movies',
+                        'TVShows',
+                        'Anime',
+                        'Discover',
+                        'Watchlist',
+                        'Search',
+                        'Upcoming'
                     ]"
+                    :max="10"
                 >
                     <component :is="Component" :key="getRouteKey(route)" />
                 </KeepAlive>
