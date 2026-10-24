@@ -722,10 +722,53 @@ async function resolveKAAStream(title, episode = 1, _preferredAudio = "dub") {
     });
     if (!pageRes.ok) return null;
     const html = await pageRes.text();
-    const idMatch = html.match(/id=([a-f0-9]{24})/);
-    if (!idMatch?.[1]) return null;
-    const id = idMatch[1];
-    const rawStreamUrl = `https://hls.krussdomi.com/manifest/${id}/master.m3u8`;
+
+    let playerUrl = null;
+    const catMatch = html.match(/src:"([^"]+cat-player[^"]+)"/i) || html.match(/src:\s*["']([^"']+)["']/i);
+    if (catMatch?.[1]) {
+      playerUrl = catMatch[1].replace(/\\u002F/gi, '/').replace(/\\\//g, '/');
+    }
+
+    let rawStreamUrl = '';
+    const subtitles = [];
+
+    if (playerUrl) {
+      try {
+        const playerRes = await fetch(playerUrl, {
+          headers: { Referer: "https://kaa.lt/", "User-Agent": KAA_USER_AGENT },
+          signal: AbortSignal.timeout(4500)
+        });
+        if (playerRes.ok) {
+          const playerHtml = await playerRes.text();
+          const manifestMatch = playerHtml.match(/&quot;manifest&quot;:\s*\[\s*\d+\s*,\s*&quot;([^&]+)&quot;/i) ||
+                                playerHtml.match(/"manifest":\s*\[\s*\d+\s*,\s*"([^"]+)"/i) ||
+                                playerHtml.match(/https?:\/\/[^\s"'<>]+\.m3u8[^\s"'<>]*/i);
+
+          rawStreamUrl = manifestMatch?.[1] || manifestMatch?.[0] || '';
+          if (rawStreamUrl.startsWith('//')) {
+            rawStreamUrl = 'https:' + rawStreamUrl;
+          }
+
+          const srtRegex = /&quot;name&quot;:\[\d+,&quot;([^&]+)&quot;\],&quot;source&quot;:\[\d+,&quot;[^&]+&quot;\],&quot;src&quot;:\[\d+,&quot;([^&]+)&quot;\]/g;
+          let sm;
+          while ((sm = srtRegex.exec(playerHtml)) !== null) {
+            let src = sm[2];
+            if (src.startsWith('https:///')) src = src.replace('https:///', 'https://');
+            subtitles.push({ label: sm[1], url: src, default: sm[1].toLowerCase().includes('en') });
+          }
+        }
+      } catch { /* ignore player fetch error */ }
+    }
+
+    if (!rawStreamUrl) {
+      const idMatch = html.match(/id=([a-f0-9]{24})/);
+      if (idMatch?.[1]) {
+        rawStreamUrl = `https://hls.krussdomi.com/manifest/${idMatch[1]}/master.m3u8`;
+      }
+    }
+
+    if (!rawStreamUrl) return null;
+
     const proxiedUrl = `/api/stream/proxy?url=${encodeURIComponent(
       rawStreamUrl
     )}&referer=${encodeURIComponent("https://krussdomi.com/")}&origin=${encodeURIComponent(
@@ -740,7 +783,8 @@ async function resolveKAAStream(title, episode = 1, _preferredAudio = "dub") {
       format: "hls",
       quality: "1080p Master HLS",
       hasDub: true,
-      supportsDualAudio: true
+      supportsDualAudio: true,
+      subtitles
     };
   } catch (err) {
     console.error("resolveKAA error:", err);
@@ -896,6 +940,7 @@ async function resolveStellarStream(targetServer = "auto", tmdbId, type, season 
 var fs2 = fs;
 var path2 = path;
 var animeIdCache = /* @__PURE__ */ new Map([
+  ["one piece", "ZkbbIfGqvoOrvvss5iQuAlVkW4AaYPxz"],
   ["jujutsu kaisen", "l9aQcH0K4elYGR6uiKnFUiymK44zIuzo"],
   ["jujutsu kaisen season 2", "l9aQcH0K4elYGR6uiKnFUiymK44zIuzo"]
 ]);
@@ -1546,7 +1591,7 @@ async function handleResolve(searchParams) {
             streamUrl: kaa.streamUrl,
             server: serverConfig?.name || "Shisui",
             provider: "kaa",
-            subtitles: [],
+            subtitles: kaa.subtitles || [],
             quality: kaa.quality || "1080p Master HLS",
             hasDub: true
           };
@@ -1987,7 +2032,7 @@ async function handleResolve(searchParams) {
             serverName: kaaResult.serverName,
             mode: "hls",
             streamUrl: kaaResult.streamUrl,
-            subtitles: [],
+            subtitles: kaaResult.subtitles || [],
             quality: kaaResult.quality || "1080p Master HLS",
             hasDub: true,
             supportsDualAudio: true,

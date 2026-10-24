@@ -21,6 +21,7 @@ export interface MiruroResolveResult {
 
 // In-memory cache for Anime title -> Miruro internal media ID
 const animeIdCache = new Map<string, string>([
+  ["one piece", "ZkbbIfGqvoOrvvss5iQuAlVkW4AaYPxz"],
   ["jujutsu kaisen", "l9aQcH0K4elYGR6uiKnFUiymK44zIuzo"],
   ["jujutsu kaisen season 2", "l9aQcH0K4elYGR6uiKnFUiymK44zIuzo"],
 ]);
