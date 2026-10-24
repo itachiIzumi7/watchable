@@ -1,0 +1,1629 @@
+.moovie-frame {
+    --ember: #ffffff;
+    --gold-leaf: #ffffff;
+    --player-accent: #ffffff;
+
+    button svg,
+    [role='button'] svg {
+        color: #ffffff !important;
+    }
+
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #000;
+    isolation: isolate;
+    overflow: hidden;
+
+    --player-accent: #ffffff;
+    --player-surface: #0b0b0b;
+
+    &__stage {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0;
+        flex: 1;
+        display: flex;
+    }
+
+    &__player {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        flex: 1;
+        background: #000;
+        border-radius: 0;
+        overflow: hidden;
+        box-shadow: none;
+        border: none;
+    }
+
+    &:fullscreen {
+        background: #000 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+
+        .moovie-frame__stage {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .moovie-frame__player {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            border-radius: 0 !important;
+            aspect-ratio: unset !important;
+            box-shadow: none !important;
+            border: 0 !important;
+        }
+    }
+
+    &:-webkit-full-screen {
+        background: #000 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+
+        .moovie-frame__stage {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .moovie-frame__player {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            border-radius: 0 !important;
+            aspect-ratio: unset !important;
+            box-shadow: none !important;
+            border: 0 !important;
+        }
+    }
+
+    &:-moz-full-screen {
+        background: #000 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+
+        .moovie-frame__stage {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .moovie-frame__player {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            border-radius: 0 !important;
+            aspect-ratio: unset !important;
+            box-shadow: none !important;
+            border: 0 !important;
+        }
+    }
+
+    &:-ms-fullscreen {
+        background: #000 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+
+        .moovie-frame__stage {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .moovie-frame__player {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            border-radius: 0 !important;
+            aspect-ratio: unset !important;
+            box-shadow: none !important;
+            border: 0 !important;
+        }
+    }
+
+    &.is-controls-hidden {
+        .moovie-frame__center-btn,
+        .moovie-frame__seekbar,
+        .moovie-frame__controls,
+        .moovie-frame__quality-menu { opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    }
+
+    &.is-buffering {
+        .moovie-frame__center-btn {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+    }
+
+    .fade-enter-active, .fade-leave-active { transition: opacity 0.45s ease; }
+    .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+    &__video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    &__center-btn {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        display: grid;
+        place-content: center;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.2s;
+        color: #fff;
+        &:hover { opacity: 1; }
+        @media (hover: none) { opacity: 1; }
+    }
+
+    &__overlay {
+        position: absolute; inset: 0;
+        display: grid; place-content: center; gap: var(--s-3);
+        text-align: center; background: var(--ink-900); z-index: 5;
+        h3 { font-family: var(--font-display); font-size: var(--fs-2xl); color: var(--bone-50); margin: 0; letter-spacing: var(--ls-tight); }
+        &--error h3 { color: var(--bone-50); }
+    }
+
+    &__spinner {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.07);
+        border: 2px solid rgba(255, 255, 255, 0.18);
+        border-top-color: #fff;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        animation: spin 1.1s linear infinite;
+
+        @media (max-width: 640px) {
+            width: 60px;
+            height: 60px;
+        }
+    }
+
+    &__retry {
+        margin-top: var(--s-2); padding: 0.65rem 1.4rem;
+        background: #fff; color: #000; border: 0;
+        border-radius: var(--r-pill); font-family: var(--font-ui); font-weight: 600; cursor: pointer;
+        transition: background-color 0.15s, transform 0.15s;
+        &:hover { background: rgba(255, 255, 255, 0.86); transform: translateY(-1px); }
+    }
+
+    &__quality-menu {
+        position: absolute;
+        bottom: 52px;
+        right: calc(var(--s-3) + 60px);
+        z-index: 20;
+        min-width: 120px;
+        list-style: none;
+        padding: var(--s-1);
+        background: rgba(15, 15, 15, 0.98);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--r-md);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    }
+
+    &__quality-item {
+        display: block;
+        width: 100%;
+        padding: 0.4rem 0.75rem;
+        background: none;
+        border: 0;
+        border-radius: var(--r-sm);
+        color: #f0eee3;
+        font-family: var(--font-ui);
+        font-size: var(--fs-sm);
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.1s;
+        &:hover { background: rgba(255, 255, 255, 0.08); }
+        &.is-active { color: #fff; font-weight: 600; }
+    }
+
+    .meta { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: 0.06em; text-transform: uppercase; margin: 0; }
+    .eyebrow { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--bone-400); margin: 0; }
+}
+
+@keyframes moovie-spin { to { transform: rotate(360deg); } }
+
+.moovie-frame__seekbar {
+    position: absolute;
+    bottom: 44px;
+    left: 0;
+    right: 0;
+    z-index: 27;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--s-4);
+    pointer-events: none;
+    cursor: pointer;
+    opacity: 1;
+    transition: opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.moovie-frame__seek-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+    pointer-events: auto;
+    margin: 0;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.moovie-frame__seek-track {
+    position: relative;
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+    overflow: visible;
+    pointer-events: none;
+    transition: height 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s;
+    
+    .moovie-frame__seekbar:hover &,
+    &.is-active {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.22);
+    }
+}
+
+.moovie-frame__seek-fill {
+    position: relative;
+    height: 100%;
+    background: var(--player-accent);
+    box-shadow: none;
+    border-radius: 999px;
+    pointer-events: none;
+    transition: width 0.1s linear;
+}
+
+.moovie-frame__seek-thumb {
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    background: #ffffff;
+    border-radius: 50%;
+    transform: translateY(-50%) scale(0);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+    box-shadow: 0 0 2px #000;
+    
+    .moovie-frame__seekbar:hover &,
+    .moovie-frame__seek-track.is-active & {
+        transform: translateY(-50%) scale(1);
+    }
+}
+
+.moovie-frame__controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px calc(2rem + env(safe-area-inset-left)) 12px calc(2rem + env(safe-area-inset-right));
+    background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.78) 100%);
+    border-top: 0;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.moovie-frame__controls-left,
+.moovie-frame__controls-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    pointer-events: auto;
+}
+
+.moovie-frame__ctrl-btn {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-content: center;
+    background: rgba(255, 255, 255, 0);
+    border: 0;
+    color: #f3f1e9;
+    cursor: pointer;
+    border-radius: 999px;
+    transition: background-color 0.1s ease, transform 0.1s ease, color 0.1s ease;
+    
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
+        transform: none;
+    }
+    
+    &:active {
+        transform: scale(1.1);
+        color: #fff;
+        background-color: rgba(255, 255, 255, 0.28);
+    }
+
+    &.is-active,
+    &.is-open {
+        color: #fff;
+        background-color: rgba(255, 255, 255, 0.16);
+    }
+
+    &:focus-visible {
+        outline: none;
+        color: #fff;
+        background-color: rgba(255, 255, 255, 0.16);
+    }
+}
+
+.moovie-frame__three-dot-btn {
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: auto 9px 4px;
+        height: 2px;
+        border-radius: 999px;
+        background: #fff;
+        transform: scaleX(0);
+        transition: transform 0.22s ease;
+    }
+
+    &.is-open {
+        &::after { transform: scaleX(1); }
+    }
+}
+
+.moovie-frame__subtitle-toggle {
+    &:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        transform: none;
+    }
+}
+
+.moovie-frame__mobile-skip {
+    display: none;
+}
+
+.moovie-frame__center-skip {
+    display: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(10, 10, 10, 0.38);
+    color: #fff;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s;
+
+    &:active {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    &--back { left: 5%; }
+    &--fwd { right: 5%; }
+}
+
+.moovie-frame__time {
+    font-size: 0.82rem;
+    font-family: var(--font-ui);
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+    margin-left: 6px;
+}
+
+.moovie-frame__settings-panel {
+    position: absolute;
+    bottom: 56px;
+    right: 12px;
+    z-index: 30;
+    width: min(343px, calc(100vw - 24px));
+    max-height: 65vh;
+    isolation: isolate;
+    background: var(--player-surface);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.72);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+
+    &::before {
+        content: '';
+        position: absolute;
+        z-index: -1;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.55;
+        background: none;
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 20px;
+        right: 20px;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.08);
+        opacity: 1;
+    }
+}
+
+.moovie-frame__embed-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.moovie-frame__embed-overlay.is-open {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.moovie-frame__embed-overlay.is-native {
+    background: transparent;
+    pointer-events: none;
+}
+
+.moovie-frame__embed-overlay.is-native .moovie-frame__embed-sources,
+.moovie-frame__embed-overlay.is-native .moovie-frame__mobile-server-btn-wrap,
+.moovie-frame__embed-overlay.is-native .moovie-frame__mobile-servers-overlay,
+.moovie-frame__embed-overlay.is-native .moovie-frame__mobile-servers-sheet,
+.moovie-frame__embed-overlay.is-native .moovie-frame__mobile-server-item,
+.moovie-frame__embed-overlay.is-native .moovie-frame__mobile-servers-close {
+    pointer-events: auto !important;
+}
+
+.moovie-frame.is-embedding .moovie-frame__player {
+    display: none;
+}
+
+.moovie-frame__embed-pane {
+    position: absolute;
+    inset: 0;
+    visibility: hidden;
+}
+
+.moovie-frame__embed-pane.is-active {
+    visibility: visible;
+}
+
+.moovie-frame__embed-frame {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #000;
+}
+
+.moovie-frame__embed-loader {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: grid;
+    place-content: center;
+    background: #000;
+    pointer-events: none;
+}
+
+.moovie-frame__embed-sources {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    transform: translateY(-50%);
+    z-index: 6;
+    flex-direction: column;
+    gap: 12px;
+    opacity: 1;
+    transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.moovie-frame__embed-sources.is-idle {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-12px);
+    pointer-events: none;
+}
+
+.moovie-frame__embed-src {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background: #fff;
+    color: #000;
+    font-family: var(--font-ui, system-ui, sans-serif);
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1;
+    display: grid;
+    place-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.moovie-frame__embed-src:hover:not(:disabled) {
+    background: #f0f0f0;
+    transform: scale(1.15);
+}
+
+.moovie-frame__embed-src.is-active {
+    border-color: #fff;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.55), 0 0 14px rgba(255, 255, 255, 0.7);
+}
+
+.moovie-frame__embed-src.is-disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* Server selector pill — always above iframes */
+.moovie-frame__mobile-server-btn-wrap {
+    display: flex;
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 500;
+    pointer-events: auto !important;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+
+    &.is-idle {
+        opacity: 0;
+        transform: translateY(-6px);
+        pointer-events: none !important;
+    }
+}
+
+.moovie-frame__mobile-server-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px 0 10px;
+    border-radius: 999px;
+    background: rgba(18, 18, 24, 0.82);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+    font-family: var(--font-ui, system-ui, sans-serif);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+    pointer-events: auto !important;
+    touch-action: manipulation;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+
+    &:active,
+    &.is-active {
+        background: rgba(30, 30, 40, 0.95);
+        border-color: rgba(255, 255, 255, 0.35);
+        transform: scale(0.97);
+    }
+}
+
+.moovie-frame__mobile-server-icon {
+    color: var(--player-accent, #fff);
+    flex-shrink: 0;
+}
+
+.moovie-frame__mobile-server-text {
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.moovie-frame__mobile-server-arrow {
+    opacity: 0.65;
+    transition: transform 0.2s ease;
+
+    .moovie-frame__mobile-server-btn.is-active & {
+        transform: rotate(180deg);
+    }
+}
+
+/* Compact server dropdown menu — anchored to pill button */
+.moovie-frame__server-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 180px;
+    background: rgba(18, 18, 24, 0.97);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 12px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65), 0 2px 8px rgba(0, 0, 0, 0.4);
+    pointer-events: auto !important;
+    transform-origin: top right;
+    z-index: 501;
+}
+
+.moovie-frame__server-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.72);
+    font-family: var(--font-ui, system-ui, sans-serif);
+    font-size: 13px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.12s ease, color 0.12s ease;
+
+    &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+    }
+
+    &:active:not(:disabled) {
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    &.is-active {
+        color: #fff;
+        font-weight: 600;
+    }
+
+    &.is-disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+}
+
+.moovie-frame__server-menu-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Slide-in animation for compact server menu */
+.moovie-server-menu-enter-active {
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.moovie-server-menu-leave-active {
+    transition: opacity 0.1s ease, transform 0.1s ease;
+}
+.moovie-server-menu-enter-from,
+.moovie-server-menu-leave-to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+}
+
+/* Keep old classes inert — they're no longer in the DOM */
+.moovie-frame__mobile-servers-overlay,
+.moovie-frame__mobile-servers-sheet,
+.moovie-frame__mobile-servers-header,
+.moovie-frame__mobile-servers-heading,
+.moovie-frame__mobile-servers-title,
+.moovie-frame__mobile-servers-close,
+.moovie-frame__mobile-servers-list,
+.moovie-frame__mobile-server-item,
+.moovie-frame__mobile-server-num,
+.moovie-frame__mobile-server-info,
+.moovie-frame__mobile-server-name,
+.moovie-frame__mobile-server-type,
+.moovie-frame__mobile-server-badge {
+    display: none !important;
+}
+
+.moovie-frame__settings-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    padding: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+    &::-webkit-scrollbar { width: 3px; }
+    &::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 99px; }
+}
+
+.moovie-frame__settings-mobile-handle {
+    display: none;
+}
+
+.moovie-frame__settings-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 60px;
+    padding: 10px 14px 10px 16px;
+    font-family: var(--font-ui, system-ui, sans-serif);
+    color: rgba(255, 255, 255, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.008));
+}
+
+.moovie-frame__settings-heading {
+    min-width: 0;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.moovie-frame__settings-eyebrow {
+    color: rgba(255, 255, 255, 0.36);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    line-height: 1.1;
+    text-transform: uppercase;
+}
+
+.moovie-frame__settings-title {
+    overflow: hidden;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.moovie-frame__settings-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex: 0 0 auto;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 9px;
+    font-weight: 750;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+
+    i {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--player-accent);
+        box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08);
+        animation: moovie-live-pulse 1.8s ease-out infinite;
+    }
+}
+
+.moovie-frame__settings-back {
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.075);
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    display: grid;
+    place-content: center;
+    border-radius: 8px;
+    transition: all 0.18s ease;
+    &:hover {
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+    }
+}
+
+.moovie-frame__settings-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    position: relative;
+    min-height: 42px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.008);
+    border: 1px solid transparent;
+    border-radius: 11px;
+    color: rgba(255, 255, 255, 0.82);
+    font-family: var(--font-ui, system-ui, sans-serif);
+    font-size: 13.5px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, color 0.15s ease;
+    &:hover {
+        background: rgba(255, 255, 255, 0.065);
+        border-color: rgba(255, 255, 255, 0.045);
+        color: #fff;
+        transform: translateX(2px);
+    }
+    &.is-active {
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.12);
+        box-shadow: none;
+        .moovie-frame__settings-item-icon { color: var(--player-accent); }
+        .moovie-frame__settings-item-label { color: #fff; }
+    }
+    &.is-dimmed { opacity: 0.4; cursor: pointer; }
+}
+
+.moovie-frame__settings-item-icon {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-content: center;
+    color: rgba(255, 255, 255, 0.42);
+    flex-shrink: 0;
+    transition: color 0.15s ease;
+    .moovie-frame__settings-item:hover & { color: rgba(255, 255, 255, 0.55); }
+    .moovie-frame__settings-item.is-active & { color: var(--player-accent); }
+}
+
+.moovie-frame__settings-item-label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+}
+
+.moovie-frame__settings-item-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.58);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+}
+
+.moovie-frame__settings-item-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.06);
+    padding: 2px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.02em;
+    &.is-on {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.14);
+    }
+}
+
+.moovie-frame__settings-item-hint {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 12px;
+    margin-left: 2px;
+}
+
+.moovie-frame__settings-chevron {
+    flex-shrink: 0;
+    color: rgba(255, 255, 255, 0.2);
+    transition: color 0.15s ease;
+    .moovie-frame__settings-item:hover & { color: rgba(255, 255, 255, 0.4); }
+}
+
+.moovie-frame__settings-divider {
+    height: 1px;
+    margin: 7px 12px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+@keyframes moovie-live-pulse {
+    0%, 100% { transform: scale(0.9); opacity: 0.8; }
+    45% { transform: scale(1.15); opacity: 1; }
+}
+
+.moovie-frame__settings-item-status {
+    width: 22px;
+    height: 22px;
+    display: grid;
+    place-content: center;
+    font-size: 11px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.04);
+    &.is-success { background: rgba(255, 255, 255, 0.16); color: #fff; }
+    &.is-pending { background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.82); }
+    &.is-failure { background: rgba(255, 255, 255, 0.06); color: rgba(255, 255, 255, 0.5); }
+    &.is-notfound { background: rgba(255, 255, 255, 0.04); color: rgba(255, 255, 255, 0.3); }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .moovie-frame__spinner { animation: none !important; }
+}
+
+.moovie-frame__settings-label {
+    padding: 10px 12px 4px;
+    font-size: 10.5px;
+    font-family: var(--font-mono, monospace);
+    color: rgba(255, 255, 255, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.moovie-frame__settings-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 4px 12px 8px;
+}
+
+.moovie-frame__settings-chip {
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.75);
+    font-family: var(--font-ui, system-ui, sans-serif);
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    &:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+    &.is-active {
+        background: var(--player-accent);
+        border-color: var(--player-accent);
+        color: #fff;
+        font-weight: 600;
+        box-shadow: none;
+    }
+    &--icon {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-content: center;
+        padding: 0;
+    }
+    &--color {
+        width: 26px;
+        height: 26px;
+        padding: 0;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        &.is-active {
+            border-color: #fff;
+            box-shadow: 0 0 0 2px var(--player-accent);
+        }
+    }
+}
+
+.moovie-frame__settings-chip--reset {
+    margin-left: auto;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: var(--player-accent);
+    &:hover { background: rgba(255, 255, 255, 0.14); }
+}
+
+@media (max-width: 640px), (pointer: coarse) {
+    .moovie-frame__mobile-skip {
+        display: none;
+    }
+
+    .moovie-frame__center-skip {
+        display: grid;
+    }
+
+    .moovie-frame__settings-panel {
+        right: 0;
+        bottom: 0;
+        left: 0;
+        top: auto;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        max-height: calc(100% - 1.5rem);
+        border-radius: 12px 12px 0 0;
+        padding: 0;
+        z-index: 40;
+        box-shadow: 0 -18px 50px rgba(0, 0, 0, 0.72);
+    }
+    .moovie-frame__settings-mobile-handle {
+        display: block;
+        width: 2.5rem;
+        height: 0.25rem;
+        margin: 0.55rem auto 0.15rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.24);
+    }
+    .moovie-frame__settings-scroll { padding: 4px; }
+    .moovie-frame__settings-item { padding: 12px 12px; font-size: 14px; min-height: 46px; }
+    .moovie-frame__settings-chip { padding: 8px 14px; font-size: 13px; min-height: 40px; }
+    .moovie-frame__settings-header { padding: 14px 14px 10px; min-height: 44px; font-size: 14px; }
+    .moovie-frame__settings-options { gap: 6px; }
+    .moovie-frame__settings-label { font-size: 11px; }
+    .moovie-frame__speed-grid { grid-template-columns: repeat(4, 1fr); gap: 5px; padding: 6px 10px; }
+    .moovie-frame__speed-btn { font-size: 13px; padding: 9px 0; }
+}
+
+.moovie-frame__settings-group {
+    padding: 10px 12px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.moovie-frame__settings-group-title {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.moovie-frame__sync-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 5px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.moovie-frame__sync-btn {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    &:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+    &:active { transform: scale(0.96); }
+    &.is-reset {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.12);
+        color: var(--player-accent);
+        &:hover { background: rgba(255, 255, 255, 0.14); }
+    }
+}
+
+.moovie-frame__sync-value {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #fff;
+    min-width: 42px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.moovie-frame__option-grid {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.moovie-frame__option-btn {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-content: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+    &:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+    &:active { transform: scale(0.94); }
+}
+
+.moovie-frame__option-val {
+    margin-left: auto;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.35);
+    font-variant-numeric: tabular-nums;
+    padding-right: 8px;
+}
+
+/* Subtitle Cue styling rules */
+.moovie-frame video::cue {
+    background-color: rgba(8, 8, 8, var(--sub-bg-opacity, 0.75)) !important;
+    color: rgba(255, 255, 255, var(--sub-text-opacity, 1)) !important;
+    font-size: var(--sub-font-size, 100%) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9) !important;
+}
+
+/* Legacy loading overlay fallback */
+.moovie-frame__loader-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: #07070a;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+// P-Stream-style loader: minimal spinner, clean source rows, no color accents.
+.moovie-frame__loader {
+    position: absolute;
+    inset: 0;
+    z-index: 12;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.82);
+    color: #fff;
+    text-align: center;
+}
+
+.moovie-frame__loader-spinner {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    border-top-color: var(--player-accent);
+    border-radius: 50%;
+    animation: moovie-loader-spin 0.85s linear infinite;
+    span {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        background: rgba(255, 255, 255, 0.06);
+    }
+}
+
+.moovie-frame__loader-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-width: min(30rem, 90vw);
+    strong { font-size: 1rem; font-weight: 600; }
+}
+
+.moovie-frame__loader-kicker,
+.moovie-frame__loader-status {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+}
+
+.moovie-frame__loader-kicker {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.moovie-frame__provider-list {
+    display: grid;
+    width: min(22rem, 100%);
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+    padding: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.75rem;
+    background: rgba(10, 10, 10, 0.9);
+}
+
+.moovie-frame__provider-row {
+    display: grid;
+    grid-template-columns: 1.2rem 1fr auto;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 1.9rem;
+    padding: 0.2rem 0.4rem;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.75rem;
+    text-align: left;
+}
+
+.moovie-frame__provider-dot {
+    display: grid;
+    width: 1rem;
+    height: 1rem;
+    place-items: center;
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.45);
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 0.7rem;
+    &.is-pending { color: rgba(255, 255, 255, 0.86); background: rgba(255, 255, 255, 0.12); animation: moovie-provider-pulse 1.2s infinite; }
+    &.is-success { color: #fff; background: rgba(255, 255, 255, 0.18); }
+    &.is-failure { color: rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.06); }
+}
+
+.moovie-frame__provider-percent {
+    color: rgba(255, 255, 255, 0.38);
+    font-variant-numeric: tabular-nums;
+}
+
+.moovie-loader-enter-active,
+.moovie-loader-leave-active { transition: opacity 0.18s ease; }
+.moovie-loader-enter-from,
+.moovie-loader-leave-to { opacity: 0; }
+
+@keyframes moovie-loader-spin { to { transform: rotate(360deg); } }
+@keyframes moovie-provider-pulse { 50% { opacity: 0.45; } }
+
+
+
+/* Big play button */
+.moovie-frame__big-play-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #000;
+    border: 0;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45), inset 0 0 24px rgba(255, 255, 255, 0.05);
+    color: var(--ember);
+    opacity: 0.9;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s, background-color 0.2s, border-color 0.2s;
+    animation: moovie-play-pulse 2.6s ease-in-out infinite;
+
+    svg {
+        width: 28px;
+        height: 28px;
+        margin-left: 5px;
+        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+    }
+
+    &:hover {
+        opacity: 1;
+        transform: scale(1.07);
+        background: #111;
+        border-color: transparent;
+    }
+
+    @media (max-width: 640px) {
+        width: 52px;
+        height: 52px;
+        svg {
+            width: 28px;
+            height: 28px;
+        }
+    }
+}
+
+@keyframes moovie-play-pulse {
+    0%, 100% { box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45), 0 0 0 0 rgba(255, 255, 255, 0.16); }
+    50% { box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45), 0 0 0 14px rgba(255, 255, 255, 0); }
+}
+
+
+
+.moovie-frame__speed-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    padding: 8px 12px;
+}
+
+.moovie-frame__speed-btn {
+    padding: 8px 0;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.65);
+    font-family: var(--font-ui, system-ui, sans-serif);
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-variant-numeric: tabular-nums;
+    &:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+    &.is-active {
+        background: var(--player-accent);
+        border-color: var(--player-accent);
+        color: #fff;
+        box-shadow: none;
+    }
+}
+
+/* Settings sliders styles */
+.moovie-frame__settings-slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.moovie-frame__settings-slider-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--player-accent);
+    font-variant-numeric: tabular-nums;
+}
+
+.moovie-frame__slider-wrapper { padding: 0; }
+
+.moovie-frame__settings-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 99px;
+    outline: none;
+    cursor: pointer;
+    &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        background: #fff;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    }
+    &::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        background: #fff;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    }
+}
+
+/* ── Settings panel transitions ──────────────────────────────────────────── */
+.moovie-settings-enter-active { transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
+.moovie-settings-leave-active { transition: all 0.16s ease-in; }
+.moovie-settings-enter-from { opacity: 0; transform: translateY(8px) scale(0.97); }
+.moovie-settings-leave-to { opacity: 0; transform: translateY(4px) scale(0.98); }
+
+
+
+/* OpenSubtitles overlay cue — custom-drawn captions locked to currentTime */
+.moovie-frame__subtitle-overlay {
+    position: absolute;
+    top: var(--sub-position, 95%);
+    left: 50%;
+    transform: translateX(-50%);
+    translate: 0 -100%;
+    z-index: 15;
+    pointer-events: none;
+    text-align: center;
+    width: 100%;
+    max-width: 85%;
+    background-color: rgba(8, 8, 8, var(--sub-bg-opacity, 0.75));
+    color: rgba(255, 255, 255, var(--sub-text-opacity, 1));
+    font-size: var(--sub-font-size, 100%);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+    padding: 0.18em 0.55em;
+    border-radius: 4px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+}
+
+/* Preview cue styling */
+.moovie-frame__preview-cue {
+    position: absolute;
+    top: calc(var(--sub-position, 100%) * 0.9);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 15;
+    pointer-events: none;
+    text-align: center;
+    width: 100%;
+    max-width: 85%;
+    
+    span {
+        background-color: rgba(8, 8, 8, var(--sub-bg-opacity, 0.75)) !important;
+        color: rgba(255, 255, 255, var(--sub-text-opacity, 1)) !important;
+        font-size: var(--sub-font-size, 100%) !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9) !important;
+        padding: 0.18em 0.55em !important;
+        border-radius: 4px;
+        line-height: 1.4;
+        display: inline-block;
+        white-space: pre-wrap;
+    }
+}
+
+
+
+/* Volume control popover container */
+.moovie-frame__volume-control {
+    position: relative;
+    display: inline-block;
+}
+
+.moovie-frame__volume-slider-popup {
+    position: absolute;
+    bottom: 45px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(28, 18, 13, 0.98);
+    border: 1px solid var(--rule-strong);
+    border-radius: 14px;
+    width: 164px;
+    height: 48px;
+    padding: 0 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 120;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.48), 0 0 0 1px rgba(232, 137, 82, 0.08);
+    backdrop-filter: blur(14px);
+}
+
+.moovie-frame__volume-vertical-slider {
+    width: 100%;
+    height: 5px;
+    background: rgba(232, 137, 82, 0.18);
+    border-radius: 999px;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+    
+    &::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 5px;
+        background: rgba(232, 137, 82, 0.22);
+        border-radius: 999px;
+    }
+
+    &::-webkit-slider-thumb {
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--ember);
+        box-shadow: 0 0 0 3px rgba(232, 137, 82, 0.16);
+        cursor: pointer;
+        margin-top: -4.5px;
+        transition: transform 0.1s ease, background-color 0.2s;
+        
+        &:hover {
+            transform: scale(1.2);
+            background-color: var(--gold-leaf);
+        }
+    }
+
+    &::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--ember);
+        border: 0;
+        box-shadow: 0 0 0 3px rgba(232, 137, 82, 0.16);
+        cursor: pointer;
+        transition: transform 0.1s ease, background-color 0.2s;
+        
+        &:hover {
+            transform: scale(1.2);
+            background-color: var(--gold-leaf);
+        }
+    }
+}
+
+
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.15); opacity: 1; border-color: rgba(255, 255, 255, 0.5); }
+}
+
+@media (max-width: 768px), (pointer: coarse) {
+    .moovie-frame__cast-btn {
+        display: grid !important;
+    }
+
+    .moovie-frame__embed-sources {
+        display: none !important;
+    }
+
+    .moovie-frame__mobile-server-btn-wrap {
+        display: flex !important;
+    }
+
+    /* On small screens, widen the menu to fill nicely */
+    .moovie-frame__server-menu {
+        min-width: 160px;
+        right: 0;
+    }
+}

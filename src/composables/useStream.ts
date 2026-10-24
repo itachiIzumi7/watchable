@@ -4,23 +4,8 @@ import { getSyncClient } from "../lib/syncClient";
 
 export const serverOrder = ref<string[] | null>(null);
 
-interface MovieServer {
-  serverIndex: number;
-  type: 'movie' | 'tv';
-  season: number;
-  episode: number;
-}
-
-interface StreamData {
-  movieServerMap: Record<string, MovieServer>;
-  version?: number;
-}
-
-export interface Server {
-  name: string;
-  urlTemplate: string;
-  isApiProvider?: boolean; // Flag for providers that need API calls instead of direct URLs
-}
+import type { MovieServer, StreamData, Server } from "../types";
+export type { MovieServer, StreamData, Server };
 
 const defaultStreamData: StreamData = {
   movieServerMap: {}
