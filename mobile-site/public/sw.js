@@ -1,5 +1,5 @@
-const CACHE_NAME = 'moovie-mobile-cache-v5';
-const IMAGE_CACHE = 'moovie-mobile-image-cache-v1';
+const CACHE_NAME = 'moovie-mobile-cache-v6';
+const IMAGE_CACHE = 'moovie-image-cache-v1';
 const PRECACHE_ASSETS = [
   '/',
   '/favicon.svg',
@@ -8,6 +8,7 @@ const PRECACHE_ASSETS = [
 
 const IMAGE_HOSTS = [
   'image.tmdb.org',
+  'hahaevilcraft.site',
   'aoneroom.com',
   'hakunaymatata.com',
   'watch21.shop',
@@ -34,7 +35,11 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
-      return Promise.all(keys.map((k) => caches.delete(k)));
+      return Promise.all(
+        keys
+          .filter((k) => k !== CACHE_NAME && k !== IMAGE_CACHE)
+          .map((k) => caches.delete(k))
+      );
     }).then(() => self.clients.claim())
   );
 });
@@ -56,8 +61,10 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(event.request)
         .then((r) => {
-          const rClone = r.clone();
-          caches.open(CACHE_NAME).then((c) => c.put('/', rClone));
+          if (r.status === 200) {
+            const rClone = r.clone();
+            caches.open(CACHE_NAME).then((c) => c.put('/', rClone));
+          }
           return r;
         })
         .catch(() => caches.match('/'))
@@ -78,15 +85,7 @@ self.addEventListener('fetch', (event) => {
   if (isStaticAsset) {
     event.respondWith(
       caches.match(event.request).then((hit) => {
-        if (hit) {
-          fetch(event.request).then((net) => {
-            if (net.status === 200) {
-              const netClone = net.clone();
-              caches.open(CACHE_NAME).then((c) => c.put(event.request, netClone));
-            }
-          }).catch(() => {});
-          return hit;
-        }
+        if (hit) return hit;
         return fetch(event.request).then((net) => {
           if (net && net.status === 200 && net.type === 'basic') {
             const netClone = net.clone();
@@ -103,15 +102,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       caches.open(IMAGE_CACHE).then((cache) => {
         return cache.match(event.request).then((hit) => {
-          if (hit) {
-            fetch(event.request).then((net) => {
-              if (net && net.ok) {
-                const netClone = net.clone();
-                cache.put(event.request, netClone);
-              }
-            }).catch(() => {});
-            return hit;
-          }
+          if (hit) return hit;
           return fetch(event.request).then((net) => {
             if (net && net.ok) cache.put(event.request, net.clone());
             return net;
